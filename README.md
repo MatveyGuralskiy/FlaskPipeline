@@ -77,6 +77,7 @@ This setup ensures that the application is rigorously tested, secure, and automa
 * CSS
 * JavaScript
 * PostgreSQL
+* SQL injection solve
 * Hashing function + solt
 
 <h2>📂 Repository</h2>
