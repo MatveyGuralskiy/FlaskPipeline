@@ -68,7 +68,7 @@ Grafana and Prometheus: Provide monitoring for the application and infrastructur
 Email notifications are sent if any issues arise.
 This setup ensures that the application is rigorously tested, secure, and automatically deployed to a scalable environment, with continuous monitoring and alerts for any issues.
 
-<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Demonstration.jpeg?raw=true">
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/FlaskPipeline.jpeg?raw=true">
 
 ### 📱 Application for Docker Image Built With
 
