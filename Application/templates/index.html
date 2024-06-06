@@ -6,16 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlaskPipeline App</title>
     <meta name="description" content="Application on Flask with Database">
-    <link rel="website icon" type="png" href="../../images/Logo.png">
-    <link rel="stylesheet" href="style.css">
+    <link rel="website icon" type="png" href="../static/images/Logo.png">
+    <link rel="stylesheet" href="../static/css/style.css">
 </head>
 
 <body class="roboto-condensed">
     <header>
         <nav>
             <ul class="nav-buttons">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
                 <li><a href="mailto:mathewguralskiy@gmail.com">Contact me</a></li>
             </ul>
             <ul class="auth-buttons">
@@ -68,14 +68,24 @@
                 a<br>
                 scalable environment, with continuous monitoring and alerts for any issues.<br>
             </p>
-            <img src="../../images/Logo.png" alt="Logo">
+            <img src="../static/images/Logo.png" alt="Logo">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <ul>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
         </section>
     </main>
     <div id="registerModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <form id="registrationForm">
+            <form id="registrationForm" action="{{ url_for('home') }}" method="POST">
                 <h2>Registration</h2>
+                <input type="hidden" name="action" value="register">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required>
                 <label for="username">Login</label>
@@ -84,6 +94,7 @@
                 <input type="password" id="password" name="password" required>
                 <label for="dob">Date of Birth</label>
                 <input type="date" id="dob" name="dob" required>
+
                 <button type="submit">Sign up</button>
             </form>
         </div>
@@ -91,8 +102,9 @@
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <form id="loginForm">
+            <form id="loginForm" action="{{ url_for('home') }}" method="POST">
                 <h2>Log in</h2>
+                <input type="hidden" name="action" value="login">
                 <label for="login-email-username">Email or Login</label>
                 <input type="text" id="login-email-username" name="login-email-username" required>
                 <label for="login-password">Password</label>
@@ -101,7 +113,7 @@
             </form>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script src="../static/js/script.js"></script>
 </body>
 
 </html>

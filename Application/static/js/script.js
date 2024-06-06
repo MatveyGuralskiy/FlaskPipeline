@@ -1,4 +1,3 @@
-/* Script JavaScript file of Main Page */
 document.addEventListener('DOMContentLoaded', function () {
     const registerModal = document.getElementById('registerModal');
     const loginModal = document.getElementById('loginModal');
@@ -42,20 +41,39 @@ document.addEventListener('DOMContentLoaded', function () {
     registrationForm.addEventListener('submit', function (event) {
         event.preventDefault();
         const formData = new FormData(registrationForm);
-        console.log('Регистрация:');
-        formData.forEach((value, key) => {
-            console.log(key + ': ' + value);
-        });
-        closeModal(registerModal);
+
+        fetch('/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'action': 'register' }
+        })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Registration:', data);
+                closeModal(registerModal);
+                window.location.reload();
+            })
+            .catch(error => console.error('Error:', error));
     });
 
     loginForm.addEventListener('submit', function (event) {
         event.preventDefault();
         const formData = new FormData(loginForm);
-        console.log('Вход:');
-        formData.forEach((value, key) => {
-            console.log(key + ': ' + value);
-        });
-        closeModal(loginModal);
+
+        fetch('/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'action': 'login' }
+        })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Login:', data);
+                if (data === 'Success') {
+                    alert('You have successfully logged in!');
+                } else {
+                    alert('Incorrect email/username or password');
+                }
+            })
+            .catch(error => console.error('Error:', error));
     });
 });
