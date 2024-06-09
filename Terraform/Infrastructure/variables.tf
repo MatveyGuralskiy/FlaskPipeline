@@ -9,9 +9,3 @@ variable "Environment" {
   type        = string
   default     = "Production"
 }
-
-variable "Remote_State_S3" {
-  description = "Terraform Backend Bucket Name"
-  type        = string
-  default     = "flaskpipeline-project-bucket"
-}

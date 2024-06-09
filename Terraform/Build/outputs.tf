@@ -1,3 +1,3 @@
-output "Certificate_Arn" {
-  value = aws_acm_certificate.FlaskPipeline_cert.arn
+output "S3_Bucket_name" {
+  value = aws_s3_bucket.Bucket.bucket_domain_name
 }
