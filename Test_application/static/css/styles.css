@@ -1,0 +1,101 @@
+/* Style CSS file for Main Page */
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+
+.roboto-condensed {
+    font-family: "Roboto Condensed", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: normal;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #343a40;
+    margin: 0;
+    padding: 0;
+}
+
+nav {
+    background-color: #0b1391;
+    padding: 1em;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 1em;
+}
+
+nav ul li a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.content {
+    padding: 2em;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label {
+    margin-top: 1em;
+}
+
+form input {
+    padding: 0.5em;
+    margin-top: 0.5em;
+    border: 1px solid #ced4da;
+    border-radius: 0.25em;
+}
+
+form button {
+    padding: 0.75em;
+    margin-top: 1em;
+    background-color: #577499;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.25em;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #0b1391;
+}
+
+#home {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#home p img {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 300px;
+    margin-left: 20px;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
