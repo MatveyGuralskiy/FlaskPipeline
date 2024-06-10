@@ -1,3 +1,8 @@
+#---------------------------
+#FlaskPipeline Project
+#Created by Matvey Guralskiy
+#---------------------------
+
 provider "aws" {
   region = var.Region
   default_tags {
