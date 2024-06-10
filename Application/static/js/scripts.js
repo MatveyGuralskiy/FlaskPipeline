@@ -1,11 +1,12 @@
+/* JavaScript file for Website */
 document.addEventListener('DOMContentLoaded', () => {
-    // Добавляем класс fade-in ко всем элементам с классом content
+    // Attach class fade in to every content
     const content = document.querySelector('.content');
     if (content) {
         content.classList.add('fade-in');
     }
 
-    // Переходы между страницами
+    // Fade in between pages
     const navLinks = document.querySelectorAll('nav ul li a');
     navLinks.forEach(link => {
         link.addEventListener('click', (event) => {
