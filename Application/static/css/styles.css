@@ -20,19 +20,50 @@ nav {
     padding: 1em;
 }
 
-nav ul {
-    list-style: none;
-    padding: 0;
-}
-
-nav ul li {
-    display: inline;
-    margin-right: 1em;
-}
-
 nav ul li a {
     color: #ffffff;
     text-decoration: none;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin-right: 1em;
+}
+
+.auth-buttons {
+    margin-left: auto;
+    display: flex;
+}
+
+.auth-buttons li {
+    margin-right: 1em;
+}
+
+.auth-buttons li a {
+    padding: 0.75em 1.5em;
+    background-color: #ffffff;
+    color: #0b1391;
+    border: 2px solid #0b1391;
+    border-radius: 0.25em;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.auth-buttons li a:hover {
+    background-color: #0b1391;
+    color: #ffffff;
+}
+
+.success {
+    background-color: #28a745;
+    padding: 0.5em;
+    border-radius: 0.25em;
+    color: #ffffff;
 }
 
 .content {
@@ -83,6 +114,47 @@ form button:hover {
     max-width: 300px;
     margin-left: 20px;
 }
+
+.contact-links {
+    list-style: none;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.contact-links li {
+    margin-bottom: 1em;
+}
+
+.contact-links li a {
+    display: inline-block;
+    padding: 0.5em 1em;
+    background-color: #0b1391;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 0.25em;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.contact-links li a:hover {
+    background-color: #577499;
+}
+
+.contact-mail p {
+    text-decoration: none;
+    font-size: 20px;
+    color: black;
+}
+
+.my_photo img {
+    height: 500px;
+    width: 500px;
+    object-fit: cover;
+    margin-left: 50em;
+    margin-top: -20em;
+}
+
 
 .fade-in {
     animation: fadeIn 0.5s ease-in-out forwards;
