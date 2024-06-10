@@ -36,7 +36,9 @@ def register():
         email = request.form['email']
         password = request.form['password']
         
+        # Salt to password
         salt = os.urandom(16).hex()
+        # Hashing function
         hashed_password = bcrypt.generate_password_hash(password + salt).decode('utf-8')
         
         new_user = User(username=username, email=email, password=hashed_password, salt=salt)
