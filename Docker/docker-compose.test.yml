@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  web:
+    image: matveyguralskiy/flask-pipeline:${DOCKER_VERSION}
+    ports:
+      - "8000:80"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
