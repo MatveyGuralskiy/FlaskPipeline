@@ -1,3 +1,7 @@
+#---------------------------
+#FlaskPipeline Project
+#Created by Matvey Guralskiy
+#---------------------------
 version: '3.8'
 
 services:
