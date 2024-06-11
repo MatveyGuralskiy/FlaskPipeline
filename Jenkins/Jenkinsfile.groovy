@@ -1,3 +1,7 @@
+/*---------------------------
+FlaskPipeline Project
+Created by Matvey Guralskiy
+---------------------------*/
 pipeline {
     agent any
     // Enviroment Variables for Project
@@ -6,6 +10,7 @@ pipeline {
         GITHUB_CREDENTIALS = credentials('github')
         AWS_ACCESS_KEY_ID     = credentials('aws-access')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret')
+        SONAR_LOGIN_KEY = credentials('sonar-project')
         DOCKER_VERSION = 'V1.0'
     }
      
@@ -33,29 +38,41 @@ pipeline {
                 }
             }
         }
-        // SonarQube Standards of Code + Analysis
+        // SonarQube Standards Analysis Code
         stage('SonarQube Check') {
             steps {
                 script {
-                    withSonarQubeEnv('SonarQube_Server') {
-                        sh 'mvn sonar:sonar'
-                        sh 'echo "Finished SonarQube Analysis of Application"'
+                    withSonarQubeEnv('Sonar-Qube') {
+                        sh '/opt/sonar-scanner/bin/sonar-scanner \
+                          -Dsonar.projectKey=Sonar-Qube \
+                          -Dsonar.sources=. \
+                          -Dsonar.host.url=http://localhost:9000 \
+                          -Dsonar.login=$SONAR_LOGIN_KEY'
+                        sh 'echo "Finished SonarQube Analysis of Flask Application"'
                     }
                 }
             }
         }
-        // Unit Tests of Code
+        // Unit Test for Code Application
         stage('Run Unit Tests') {
             steps {
-                sh 'python -m unittest discover -s tests -p "*_test.py"'
-                sh 'echo "Finished All Unit Tests"'
+                script {
+                    dir('Project/Application/Application') {
+                        sh 'python3 unit_test.py'
+                        sh 'echo "Finished Unit Tests"'
+                    }
+                }
             }
         }
-        // Bandit Security Analyzing
-        stage('Run Bandit') {
+        // Bandit Security Analysis
+        stage('Bandit Check') {
             steps {
-                sh 'bandit -r Application'
-                sh 'echo "Bandit Scanning finished"'
+                script {
+                    dir('Project/Application/Application') {
+                        sh 'bandit -r app.py'
+                        sh 'echo "Finished Bandit Tests"'
+                    }
+                }
             }
         }
         // Build Docker Image of Application
@@ -65,10 +82,8 @@ pipeline {
                     try {
                         dir('Application') {
                             sh "docker build -t flask-pipeline:$DOCKER_VERSION ."
-                                }
-                                sh 'echo "Application created to Docker Image"'
-                            }
                         }
+                        sh 'echo "Application created to Docker Image"'
                     } catch (Exception e) {
                         error "Failed to Build Docker Image: ${e.message}"
                     }
@@ -135,10 +150,10 @@ pipeline {
                 script {
                     try {
                         dir('Terraform/Infrastructure') {
-                            sh 'export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"'
-                            sh 'export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"'
-                            sh 'terraform init'
-                            sh 'terraform apply -auto-approve'
+                            withEnv(["AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"]) {
+                                sh 'terraform init'
+                                sh 'terraform apply -auto-approve'
+                            }
                         }
                         echo "Terraform apply completed successfully"
                         echo "Finished deployment"
@@ -147,17 +162,17 @@ pipeline {
                     }
                 }
             }
-        }  
-        // Send Email if Job Failed
-        post {
-            failure {
-                emailext (
-                    subject: "Build Failed: ${currentBuild.fullDisplayName}",
-                    body: "Your Jenkins build has failed. Check the console output for details",
-                    recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                    to: "mathewguralskiy@gmail.com"
-                )
-            }
+        }
+    }
+    // Send Email if Job Failed
+    post {
+        failure {
+            emailext (
+                subject: "Build Failed: ${currentBuild.fullDisplayName}",
+                body: "Your Jenkins build has failed. Check the console output for details",
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                to: "mathewguralskiy@gmail.com"
+            )
         }
     }
 }

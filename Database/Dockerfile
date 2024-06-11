@@ -1,3 +1,7 @@
+#---------------------------
+#FlaskPipeline Project
+#Created by Matvey Guralskiy
+#---------------------------
 FROM postgres:latest
 
 # Default Environment Variables

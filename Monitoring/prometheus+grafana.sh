@@ -1,4 +1,8 @@
 #!/bin/bash
+#---------------------------
+#FlaskPipeline Project
+#Created by Matvey Guralskiy
+#---------------------------
 #-------------Prometheus Installation----------------
 PROMETHEUS_VERSION="2.51.1"
 PROMETHEUS_FOLDER_CONFIG="/etc/prometheus"

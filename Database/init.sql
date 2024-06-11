@@ -1,3 +1,7 @@
+/*---------------------------
+FlaskPipeline Project
+Created by Matvey Guralskiy
+---------------------------*/
 -- Create Database PostgreSQL
 CREATE DATABASE "$POSTGRES_DB";
 CREATE USER "$POSTGRES_USER" WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD';
