@@ -3,3 +3,4 @@ Flask-SQLAlchemy==3.0.3
 Flask-Bcrypt==1.0.1
 python-dotenv==0.19.1
 psycopg2-binary==2.9.6
+unittest2==1.1.0
