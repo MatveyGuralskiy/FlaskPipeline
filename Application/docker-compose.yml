@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    image: flask-pipeline:V1.0
+    ports:
+      - "80:80"
+    env_file:
+      - .env
