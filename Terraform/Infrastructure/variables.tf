@@ -44,3 +44,9 @@ variable "Public_Subnet_CIDR" {
     "10.0.4.0/24"
   ]
 }
+
+variable "Node_type" {
+  description = "Node Instance type"
+  type        = string
+  default     = "t3.micro"
+}
