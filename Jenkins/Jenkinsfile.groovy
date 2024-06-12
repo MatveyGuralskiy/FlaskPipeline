@@ -11,6 +11,7 @@ pipeline {
         AWS_ACCESS_KEY_ID     = credentials('access-key')
         AWS_SECRET_ACCESS_KEY = credentials('secret-key')
         SONAR_LOGIN_KEY = credentials('sonar-project')
+        DOCKER_VERSION = 'V1.0'
         SECRET_ENV = credentials('secret-env')
     }
      
@@ -108,26 +109,7 @@ pipeline {
                 }
             }
         }
-        // Scan Docker Image with Aqua Trivy
-        stage('Aqua Trivy Scanning') {
-            steps {
-                script {
-                    try {
-                        def trivyReport = sh(script: "trivy --format json flask-pipeline:$DOCKER_VERSION", returnStdout: true).trim()
-                        writeFile file: 'trivy_report.json', text: trivyReport
-                        echo "Trivy scan completed and report saved as trivy_report.json"
-                        // Fail the build if vulnerabilities are High
-                        def highSeverityVulnerabilities = sh(script: "echo '${trivyReport}' | jq '.[].Vulnerabilities | map(select(.Severity == \"HIGH\")) | length'", returnStdout: true).trim().toInteger()
-                        if (highSeverityVulnerabilities > 0) {
-                            error "The Build get High vulnerability"
-                        }
-                    } catch (Exception e) {
-                        error "Failed to scan Docker image with Trivy: ${e.message}"
-                    }
-                }
-            }
-        }
-        // Rename Image to Upload in DockerHub
+        // Rename Image for Uploading to DockerHub
         stage('Rename and Push Docker Image to DockerHub') {
             steps {
                 script {
@@ -136,10 +118,30 @@ pipeline {
                             sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                             sh "docker tag flask-pipeline:$DOCKER_VERSION matveyguralskiy/flask-pipeline:$DOCKER_VERSION"
                             sh "docker push matveyguralskiy/flask-pipeline:$DOCKER_VERSION"
-                            echo "Docker Image Uploaded"
+                            echo "Docker Image uploaded"
                         }
                     } catch (Exception e) {
-                        error "Failed to Push Docker Image to DockerHub: ${e.message}"
+                        error "Failed to push Docker image to DockerHub: ${e.message}"
+                    }
+                }
+            }
+        }
+        // Scan Docker Image with Aqua Trivy
+        stage('Aqua Trivy Scanning') {
+            steps {
+                script {
+                    try {
+                        def trivyReport = sh(script: "trivy image matveyguralskiy/flask-pipeline:$DOCKER_VERSION --format json", returnStdout: true).trim()
+                        writeFile file: 'trivy_report.json', text: trivyReport
+                        echo "Trivy scan completed and report saved as trivy_report.json"
+                        // Read Results
+                        def vulnerabilities = readJSON file: 'trivy_report.json'
+                        def criticalVulnerabilities = vulnerabilities.Results[0].Vulnerabilities.findAll { it.Severity == "CRITICAL" }
+                        if (criticalVulnerabilities.size() > 1) {
+                            error "Critical vulnerabilities found in the Docker image. Build failed."
+                        }
+                    } catch (Exception e) {
+                        error "Failed to scan Docker image with Trivy: ${e.message}"
                     }
                 }
             }
@@ -149,7 +151,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        dir('Docker') {
+                        dir('Project/Application/Docker') {
                             sh 'docker-compose -f docker-compose.test.yml up -d'
                             echo "Docker Compose finished testing"
                         }
@@ -157,7 +159,9 @@ pipeline {
                         error "Failed to test Docker Container with Docker Compose: ${e.message}"
                     } finally {
                         // Clean up after testing
-                        sh 'docker-compose -f docker-compose.test.yml down'
+                        dir('Project/Application/Docker') {
+                            sh 'docker-compose -f docker-compose.test.yml down'
+                        }
                     }
                 }
             }
