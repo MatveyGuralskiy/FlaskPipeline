@@ -202,6 +202,31 @@ resource "aws_autoscaling_group" "Database-PostgreSQL-ASG" {
   }
 }
 
+#------------EKS Cluster------------------
+# Module for EKS Cluster
+module "eks_cluster" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "17.14.0"
+
+  cluster_name    = "FlaskPipeline-Cluster"
+  cluster_version = "1.21"
+
+  subnets = [Public_Subnets[*].id]
+  vpc_id  = aws_vpc.VPC_FlaskPipeline.id
+
+  # Nodes configuration
+  node_groups = {
+    eks_workers = {
+      desired_capacity = 2
+      max_capacity     = 10
+      min_capacity     = 2
+
+      instance_type = var.Node_type
+    }
+  }
+
+  manage_aws_auth = true
+}
 
 #------------Route53 DNS and ACM-----------------
 

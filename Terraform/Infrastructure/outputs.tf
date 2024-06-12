@@ -29,3 +29,8 @@ output "Private_Subnets_ID" {
 output "Certificate_Arn" {
   value = aws_acm_certificate.FlaskPipeline_cert.arn
 }
+
+output "EKS Cluster ID" {
+  description = "ID of the EKS cluster"
+  value       = module.eks_cluster.cluster_id
+}
