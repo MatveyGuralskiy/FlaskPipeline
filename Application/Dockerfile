@@ -1,3 +1,7 @@
+#---------------------------
+#FlaskPipeline Project
+#Created by Matvey Guralskiy
+#---------------------------
 FROM python:3.9-slim
 
 # Application Directory of Container
