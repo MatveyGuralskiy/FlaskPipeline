@@ -4,7 +4,7 @@
 #---------------------------
 
 variable "Region" {
-  description = "Route53 ACM Region"
+  description = "AWS Region to work with"
   type        = string
   default     = "eu-central-1"
 }
@@ -30,5 +30,5 @@ variable "Master_type" {
 variable "CIDR_VPC" {
   type        = string
   description = "My CIDR Block of AWS VPC"
-  default     = "10.0.0.0/16"
+  default     = "192.168.0.0/16"
 }

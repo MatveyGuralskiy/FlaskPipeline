@@ -31,11 +31,17 @@ sudo usermod -aG docker $USER
 # To Add Jenkins User to Docker
 sudo usermod -aG docker jenkins
 
+# Reboot System
+sudo reboot
+
+#Install Docker-Compose
+sudo apt install -y docker-compose
+
 # Install Terraform
 sudo snap install terraform --classic
 
 # Install Sonarqube
-sudo docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
+sudo docker run -d --name sonar --restart always -p 9000:9000 sonarqube:lts-community
 
 # Wait for Sonarqube to start
 sleep 60
