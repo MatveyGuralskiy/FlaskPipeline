@@ -8,13 +8,20 @@ pipeline {
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('dockerhub')
         GITHUB_CREDENTIALS = credentials('github')
-        AWS_ACCESS_KEY_ID     = credentials('aws-access')
-        AWS_SECRET_ACCESS_KEY = credentials('aws-secret')
+        AWS_ACCESS_KEY_ID     = credentials('access-key')
+        AWS_SECRET_ACCESS_KEY = credentials('secret-key')
         SONAR_LOGIN_KEY = credentials('sonar-project')
-        DOCKER_VERSION = 'V1.0'
+        SECRET_ENV = credentials('secret-env')
     }
      
     stages {
+        // Clean Up Workspace for Pipeline
+        stage('Clean Workspace') {
+            steps {
+                sh 'rm -rf *'
+                sh 'echo "Finished to Clean Up Work Directory"'
+            }
+        }
         // Clone GitHub repository and Image Application to Docker Image
         stage('Clone Repository') {
             steps {
@@ -34,6 +41,17 @@ pipeline {
                         }
                     } catch (Exception e) {
                         error "Failed to clone repository: ${e.message}"
+                    }
+                }
+            }
+        }
+        // Add Secret env file for PostgreSQL connection
+        stage('Add Env file') {
+            steps {
+                script {
+                    dir('Project/Application/Application') {
+                        sh "cp ${SECRET_ENV} .env"
+                        sh 'echo "Finished Copy Env file"'
                     }
                 }
             }
@@ -80,8 +98,8 @@ pipeline {
             steps {
                 script {
                     try {
-                        dir('Application') {
-                            sh "docker build -t flask-pipeline:$DOCKER_VERSION ."
+                        dir('Project/Application/Application') {
+                            sh "docker-compose up --build -d"
                         }
                         sh 'echo "Application created to Docker Image"'
                     } catch (Exception e) {
