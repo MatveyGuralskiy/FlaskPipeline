@@ -299,6 +299,9 @@ resource "aws_instance" "Monitoring" {
   key_name          = var.Key_SSH
   # Bash Bootstapping to install Grafana and Prometheus
   user_data = file("../../Monitoring/prometheus+grafana.sh")
+  lifecycle {
+    prevent_destroy = true
+  }
   tags = {
     Name = "Monitoring-Instance"
   }
