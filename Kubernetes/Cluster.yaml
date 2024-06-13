@@ -6,21 +6,21 @@ metadata:
   region: us-east-1
 
 vpc:
-  id: PLACEHOLDER_VPC_ID
+  id: ${aws_vpc.VPC_FlaskPipeline.id}
   subnets:
     public:
-      - PLACEHOLDER_PUBLIC_SUBNET_1_ID
-      - PLACEHOLDER_PUBLIC_SUBNET_2_ID
+      - ${aws_subnet.Public_Subnets[0].id}
+      - ${aws_subnet.Public_Subnets[1].id}
 
 nodeGroups:
   - name: worker-node-1
     instanceType: t3.micro
     desiredCapacity: 2
     securityGroups:
-      - PLACEHOLDER_EKS_SG_ID
+      - ${aws_security_group.EKS_SG.id}
 
   - name: worker-node-2
     instanceType: t3.micro
     desiredCapacity: 2
     securityGroups:
-      - PLACEHOLDER_EKS_SG_ID
+      - ${aws_security_group.EKS_SG.id}
