@@ -3,24 +3,25 @@ kind: ClusterConfig
 
 metadata:
   name: FlaskPipeline-Cluster
-  region: us-east-1
+  region: ${AWS_REGION}
 
 vpc:
-  id: ${aws_vpc.VPC_FlaskPipeline.id}
+  id: ${vpcId}
   subnets:
     public:
-      - ${aws_subnet.Public_Subnets[0].id}
-      - ${aws_subnet.Public_Subnets[1].id}
+      - ${publicSubnets[0]}
+      - ${publicSubnets[1]}
 
 nodeGroups:
   - name: worker-node-1
     instanceType: t3.micro
     desiredCapacity: 2
     securityGroups:
-      - ${aws_security_group.EKS_SG.id}
+      - ${eksSecurityGroupId}
 
   - name: worker-node-2
     instanceType: t3.micro
     desiredCapacity: 2
     securityGroups:
-      - ${aws_security_group.EKS_SG.id}
+      - ${eksSecurityGroupId}
+"""
