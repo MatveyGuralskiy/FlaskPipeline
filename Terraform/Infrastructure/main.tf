@@ -152,13 +152,6 @@ resource "aws_security_group" "Database_SG" {
     }
   }
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -202,30 +195,156 @@ resource "aws_autoscaling_group" "Database-PostgreSQL-ASG" {
   }
 }
 
-#------------EKS Cluster------------------
-# Module for EKS Cluster
-module "eks_cluster" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "17.14.0"
+#------------Bastion Host-----------------
+# Security Group for Bastion Host
+resource "aws_security_group" "Bastion_Host_SG" {
+  name        = "Bastion Host Security Group"
+  description = "Security Group for SSH"
+  vpc_id      = aws_vpc.VPC_FlaskPipeline.id
 
-  cluster_name    = "FlaskPipeline-Cluster"
-  cluster_version = "1.21"
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  subnets = [Public_Subnets[*].id]
-  vpc_id  = aws_vpc.VPC_FlaskPipeline.id
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  # Nodes configuration
-  node_groups = {
-    eks_workers = {
-      desired_capacity = 2
-      max_capacity     = 10
-      min_capacity     = 2
+  tags = {
+    Name = "Bastion Host SG"
+  }
+}
 
-      instance_type = var.Node_type
+# Launch Configuration for Auto-Scaling Group
+resource "aws_launch_configuration" "Bastion-Host-LC" {
+  name          = "Bastion-Host"
+  image_id      = data.aws_ami.Latest_Ubuntu.id
+  instance_type = var.Instance_type
+
+  key_name        = var.Key_SSH
+  security_groups = [aws_security_group.Bastion_Host_SG.id]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Auto-Scaling Group for Bastion Host
+resource "aws_autoscaling_group" "Bastion-Host-ASG" {
+  desired_capacity    = 1
+  max_size            = 1
+  min_size            = 1
+  vpc_zone_identifier = aws_subnet.Public_Subnets[*].id
+
+  launch_configuration = aws_launch_configuration.Bastion-Host-LC.id
+
+  tag {
+    key                 = "Name"
+    value               = "Bastion-Host-ASG"
+    propagate_at_launch = true
+  }
+}
+
+#------------Monitoring Instance-----------------
+#------------Grafana and Prometheus--------------
+
+# Dynamic Security Group for Monitoring
+resource "aws_security_group" "Monitoring_SG" {
+  name        = "Monitoring Security Group"
+  description = "Security Group for Monitoring"
+  vpc_id      = aws_vpc.VPC_FlaskPipeline.id
+
+  dynamic "ingress" {
+    for_each = ["3000", "9090", "9100"]
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
     }
   }
 
-  manage_aws_auth = true
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Monitoring SG"
+  }
+}
+
+# Create Monitoring Instance
+resource "aws_instance" "Monitoring" {
+  ami               = data.aws_ami.Latest_Ubuntu.id
+  instance_type     = var.Instance_type
+  subnet_id         = aws_subnet.Public_Subnets[0].id
+  security_groups   = [aws_security_group.Monitoring_SG.id]
+  availability_zone = "${var.Region}a"
+  key_name          = var.Key_SSH
+  # Bash Bootstapping to install Grafana and Prometheus
+  user_data = file("../../Monitoring/prometheus+grafana.sh")
+  tags = {
+    Name = "Monitoring-Instance"
+  }
+}
+
+#--------------------EKS Cluster-----------------------
+# Dynamic Security Group for EKS and Worker Nodes
+resource "aws_security_group" "EKS_SG" {
+  name        = "EKS Security Group"
+  description = "Security Group for EKS Cluster and Worker Nodes"
+  vpc_id      = aws_vpc.VPC_FlaskPipeline.id
+
+  dynamic "ingress" {
+    for_each = ["8080", "443", "80", "5000", "10250"]
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+
+  ingress {
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "EKS SG"
+  }
 }
 
 #------------Route53 DNS and ACM-----------------
