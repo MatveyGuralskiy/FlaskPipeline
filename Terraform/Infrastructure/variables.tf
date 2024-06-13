@@ -45,14 +45,8 @@ variable "Public_Subnet_CIDR" {
   ]
 }
 
-variable "Node_type" {
-  description = "Node Instance type"
-  type        = string
-  default     = "t3.micro"
-}
-
 variable "Key_SSH" {
   description = "Key Pair Name"
   type        = string
-  default     = "Frankfurt"
+  default     = "Virginia"
 }
