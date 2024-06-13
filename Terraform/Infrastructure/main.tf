@@ -16,7 +16,7 @@ provider "aws" {
 # Remote State sends on S3 Bucket
 terraform {
   backend "s3" {
-    bucket  = "flaskpipeline-project-bucket"
+    bucket  = "flaskpipeline-project-production"
     key     = "Production/terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
