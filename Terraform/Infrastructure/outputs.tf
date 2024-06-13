@@ -34,3 +34,8 @@ output "EKS Cluster ID" {
   description = "ID of the EKS cluster"
   value       = module.eks_cluster.cluster_id
 }
+
+output "EKS_Security_Group_ID" {
+  description = "Security group of EKS Cluster and Worker Nodes"
+  value       = aws_security_group.EKS_SG.id
+}

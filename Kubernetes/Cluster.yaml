@@ -1,0 +1,26 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: FlaskPipeline-Cluster
+  region: us-east-1
+
+vpc:
+  id: ${aws_vpc.VPC_FlaskPipeline.id}
+  subnets:
+    public:
+      - ${aws_subnet.Public_Subnets[0].id}
+      - ${aws_subnet.Public_Subnets[1].id}
+
+nodeGroups:
+  - name: worker-node-1
+    instanceType: t3.micro
+    desiredCapacity: 2
+    securityGroups:
+      - ${aws_security_group.EKS_SG.id}
+
+  - name: worker-node-2
+    instanceType: t3.micro
+    desiredCapacity: 2
+    securityGroups:
+      - ${aws_security_group.EKS_SG.id}

@@ -50,3 +50,9 @@ variable "Node_type" {
   type        = string
   default     = "t3.micro"
 }
+
+variable "Key_SSH" {
+  description = "Key Pair Name"
+  type        = string
+  default     = "Frankfurt"
+}
