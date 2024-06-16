@@ -174,7 +174,7 @@ resource "aws_eks_node_group" "Worker_Nodes" {
   instance_types = ["t3.micro"]
 
   remote_access {
-    ec2_ssh_key = "Frankfurt"
+    ec2_ssh_key = "Virginia"
   }
 
   tags = {
