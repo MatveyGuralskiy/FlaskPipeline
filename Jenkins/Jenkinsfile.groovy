@@ -166,68 +166,24 @@ pipeline {
                 }
             }
         }
-        // Run Terraform files to create Infrastructure
-        stage('Run Terraform') {
+         // Run Terraform files to create Infrastructure and EKS Cluster
+        stage('Run Terraform IaaC') {
             steps {
                 script {
                     try {
-                        dir('Terraform/Infrastructure') {
-                            withEnv(["AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"]) {
-                                sh 'terraform init'
-                                sh 'terraform apply -auto-approve'
-                            }
+                        dir('Project/Application/Terraform/Infrastructure') {
+                            sh 'export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"'
+                            sh 'export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"'
+                            sh 'export AWS_REGION="$AWS_REGION"'
+                            sh 'terraform init'
+                            sh 'terraform plan -out=tfplan'
+                            sh 'terraform apply -auto-approve tfplan'
+
                         }
                         echo "Terraform apply completed successfully"
                         echo "Finished deployment"
                     } catch (Exception e) {
                         error "Failed to run Terraform configuration: ${e.message}"
-                    }
-                }
-            }
-        }
-        // Config Cluster.yaml file
-        stage('Prepare EKS Cluster Config') {
-            steps {
-                script {
-                    // Get values from Terraform output
-                    def vpcId = sh(script: 'terraform output -raw VPC_ID', returnStdout: true).trim()
-                    def publicSubnetsIds = sh(script: 'terraform output -raw Public_Subnets_ID', returnStdout: true).trim()
-                    def eksSecurityGroupId = sh(script: 'terraform output -raw EKS_Security_Group_ID', returnStdout: true).trim()
-                    
-                    // Read existing Cluster.yaml file
-                    def clusterConfig = readFile('Cluster.yaml')
-                    
-                    // Replace placeholders with actual values
-                    clusterConfig = clusterConfig.replace('PLACEHOLDER_VPC_ID', vpcId)
-                    clusterConfig = clusterConfig.replace('PLACEHOLDER_PUBLIC_SUBNET_1_ID', publicSubnetsIds.split("\n")[0].trim())
-                    clusterConfig = clusterConfig.replace('PLACEHOLDER_PUBLIC_SUBNET_2_ID', publicSubnetsIds.split("\n")[1].trim())
-                    clusterConfig = clusterConfig.replace('PLACEHOLDER_EKS_SG_ID', eksSecurityGroupId)
-                    
-                    // Write modified Cluster.yaml file
-                    writeFile file: 'Cluster.yaml', text: clusterConfig
-                }
-            }
-        }
-        // Create EKS Cluster and Check if Cluster Exists
-        stage('Creating EKS Cluster and Check it') {
-            steps {
-                script {
-                    try {
-                        dir ('Project/Application/Kubernetes') {
-                            withEnv(["AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"]) {
-                                // Check if the cluster already exists
-                                def clusterExists = sh(script: 'eksctl get cluster -o json | jq -r ".[].metadata.name" | grep -Fxq "FlaskPipeline-Cluster"', returnStatus: true) == 0
-
-                                if (!clusterExists) {
-                                    // Apply the cluster configuration
-                                    sh 'eksctl create cluster -f Cluster.yaml'
-                                } else {
-                                    echo 'EKS cluster FlaskPipeline-Cluster already exists, skipping creation.'
-                                } catch (Exception e) {
-                                    error "Failed to run Terraform configuration: ${e.message}"
-                                }
-                            }
-                        }
                     }
                 }
             }

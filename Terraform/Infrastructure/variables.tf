@@ -27,15 +27,6 @@ variable "CIDR_VPC" {
   default     = "10.0.0.0/16"
 }
 
-variable "Private_Subnet_CIDR" {
-  description = "VPC Private Subnet CIDR blocks"
-  type        = list(any)
-  default = [
-    "10.0.1.0/24",
-    "10.0.2.0/24"
-  ]
-}
-
 variable "Key_SSH" {
   description = "Key Pair Name"
   type        = string
