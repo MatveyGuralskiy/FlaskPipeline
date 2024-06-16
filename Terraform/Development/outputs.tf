@@ -13,15 +13,16 @@ output "VPC_cidr" {
   description = "My VPC CIDR Block"
 }
 
-output "Public_Subnet_ID" {
-  value       = aws_subnet.Public_Subnet.id
+output "Public_A_ID" {
+  value       = aws_subnet.Public_A.id
+  description = "Public Subnets ID of VPC"
+}
+
+output "Public_B_ID" {
+  value       = aws_subnet.Public_B.id
   description = "Public Subnets ID of VPC"
 }
 
 output "Master_Instance_Public_IP" {
   value = aws_instance.Master_Instance.public_ip
-}
-
-output "Database_Public_IP" {
-  value = aws_instance.Postgres_Database.public_ip
 }

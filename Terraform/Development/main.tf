@@ -40,8 +40,8 @@ resource "aws_internet_gateway" "IG_FlaskPipeline" {
   }
 }
 
-# Create Public Subnet
-resource "aws_subnet" "Public_Subnet" {
+# Create Public Subnet in Availability Zones A, B
+resource "aws_subnet" "Public_A" {
   vpc_id            = aws_vpc.VPC_FlaskPipeline.id
   cidr_block        = "192.168.1.0/24"
   availability_zone = "${var.Region}a"
@@ -52,8 +52,19 @@ resource "aws_subnet" "Public_Subnet" {
   }
 }
 
-# Create Route Table for Public Subnet
-resource "aws_route_table" "Public_RouteTable" {
+resource "aws_subnet" "Public_B" {
+  vpc_id            = aws_vpc.VPC_FlaskPipeline.id
+  cidr_block        = "192.168.2.0/24"
+  availability_zone = "${var.Region}b"
+  # Enable Auto-assigned IPv4
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "Public Subnet - ${var.Environment}"
+  }
+}
+
+# Create Route Tables for Public Subnet A, B
+resource "aws_route_table" "Public_RouteTable_A" {
   vpc_id = aws_vpc.VPC_FlaskPipeline.id
   route {
     cidr_block = var.CIDR_VPC
@@ -64,16 +75,36 @@ resource "aws_route_table" "Public_RouteTable" {
     gateway_id = aws_internet_gateway.IG_FlaskPipeline.id
   }
   tags = {
-    Name = "Public RouteTable - ${var.Environment}"
+    Name = "Public RouteTable A- ${var.Environment}"
   }
 }
 
-# Attach Public Subnet to Route Table
-resource "aws_route_table_association" "RouteTable_Attach" {
-  subnet_id      = aws_subnet.Public_Subnet.id
-  route_table_id = aws_route_table.Public_RouteTable.id
+# Create Route Tables for Public Subnet A, B
+resource "aws_route_table" "Public_RouteTable_B" {
+  vpc_id = aws_vpc.VPC_FlaskPipeline.id
+  route {
+    cidr_block = var.CIDR_VPC
+    gateway_id = "local"
+  }
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.IG_FlaskPipeline.id
+  }
+  tags = {
+    Name = "Public RouteTable B- ${var.Environment}"
+  }
 }
 
+# Attach Public Subnets to Route Tables
+resource "aws_route_table_association" "RouteTable_Attach_A" {
+  subnet_id      = aws_subnet.Public_A.id
+  route_table_id = aws_route_table.Public_RouteTable_A.id
+}
+
+resource "aws_route_table_association" "RouteTable_Attach_B" {
+  subnet_id      = aws_subnet.Public_B.id
+  route_table_id = aws_route_table.Public_RouteTable_B.id
+}
 
 #-----------Database and Master-------------
 # Image for Database and Master
@@ -86,27 +117,51 @@ data "aws_ami" "Latest_Ubuntu" {
   }
 }
 
-# Dynamic Security Group
-resource "aws_security_group" "SG_Development" {
+# Launch Configuration for Auto-Scaling Group
+resource "aws_launch_configuration" "Postgres_Database-LC" {
+  name          = "Postgres-Database"
+  image_id      = data.aws_ami.Latest_Ubuntu.id
+  instance_type = var.Database_type
+
+  user_data = file("../../Bash/database.sh")
+
+  security_groups = [aws_security_group.Database_SG.id]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Auto-Scaling Group for Database
+resource "aws_autoscaling_group" "Postgres_Database-ASG" {
+  desired_capacity    = 1
+  max_size            = 1
+  min_size            = 1
+  vpc_zone_identifier = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
+
+  launch_configuration = aws_launch_configuration.Postgres_Database-LC.id
+
+  tag {
+    key                 = "Name"
+    value               = "Database-ASG"
+    propagate_at_launch = true
+  }
+}
+
+# Dynamic Security Group for Database
+resource "aws_security_group" "Database_SG" {
   name        = "PosgreSQL Security Group"
-  description = "Security Group for Master Instance and PosgreSQL"
+  description = "Security Group for Flask, PosgreSQL"
   vpc_id      = aws_vpc.VPC_FlaskPipeline.id
 
   dynamic "ingress" {
-    for_each = ["5432", "5000", "8000", "8080", "9000", "80"]
+    for_each = ["5432", "5000"]
     content {
       from_port   = ingress.value
       to_port     = ingress.value
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }
-  }
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
   }
 
   egress {
@@ -121,30 +176,44 @@ resource "aws_security_group" "SG_Development" {
   }
 }
 
-# Create Database
-resource "aws_instance" "Postgres_Database" {
-  ami               = data.aws_ami.Latest_Ubuntu.id
-  instance_type     = var.Database_type
-  subnet_id         = aws_subnet.Public_Subnet.id
-  security_groups   = [aws_security_group.SG_Development.id]
-  availability_zone = "${var.Region}a"
-  # Bash script to install Docker Image of Database
-  user_data = file("../../Bash/database.sh")
-  tags = {
-    Name = "PostgreSQL Database"
-  }
-}
-
 # Create Master Instance
 resource "aws_instance" "Master_Instance" {
   ami               = data.aws_ami.Latest_Ubuntu.id
   instance_type     = var.Master_type
-  subnet_id         = aws_subnet.Public_Subnet.id
+  subnet_id         = aws_subnet.Public_A.id
   security_groups   = [aws_security_group.SG_Development.id]
   availability_zone = "${var.Region}a"
   # Bash script to install tools for Master
   user_data = file("../../Bash/master_instance.sh")
   tags = {
     Name = "Master Instance"
+  }
+}
+
+# Dynamic Security Group for Master Instance
+resource "aws_security_group" "SG_Development" {
+  name        = "Master Security Group"
+  description = "Security Group for Master Instance"
+  vpc_id      = aws_vpc.VPC_FlaskPipeline.id
+
+  dynamic "ingress" {
+    for_each = ["5432", "5000", "8000", "8080", "9000", "80", "22"]
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "PostgreSQL Database SG"
   }
 }
