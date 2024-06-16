@@ -58,7 +58,7 @@ resource "aws_subnet" "Public_A" {
 resource "aws_subnet" "Public_B" {
   vpc_id            = aws_vpc.VPC_FlaskPipeline.id
   cidr_block        = "10.0.4.0/24"
-  availability_zone = "${var.Region}a"
+  availability_zone = "${var.Region}b"
   # Enable Auto-assigned IPv4
   map_public_ip_on_launch = true
   tags = {
