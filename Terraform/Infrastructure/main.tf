@@ -121,7 +121,7 @@ resource "aws_eks_cluster" "EKS" {
   role_arn = aws_iam_role.Main_Role.arn
 
   vpc_config {
-    subnet_ids = [aws_subnet.Public_A, aws_subnet.Public_B]
+    subnet_ids = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
   }
 
   depends_on = [
@@ -164,7 +164,7 @@ resource "aws_eks_node_group" "Worker_Nodes" {
   cluster_name    = aws_eks_cluster.EKS.name
   node_group_name = "Node-FlaskPipeline"
   node_role_arn   = aws_iam_role.Node_Role.arn
-  subnet_ids      = [aws_subnet.Public_A, aws_subnet.Public_B]
+  subnet_ids      = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
 
   scaling_config {
     desired_size = 2
