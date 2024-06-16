@@ -144,7 +144,7 @@ resource "aws_route_table_association" "Route_Table_Private_B" {
   route_table_id = aws_route_table.Private_Route_Table_B.id
 }
 
-#-----------Database-------------
+#------------Bastion Host-----------------
 # Image for Launch Configuration
 data "aws_ami" "Latest_Ubuntu" {
   owners      = ["099720109477"]
@@ -155,66 +155,6 @@ data "aws_ami" "Latest_Ubuntu" {
   }
 }
 
-# Dynamic Security Group for Database
-resource "aws_security_group" "Database_SG" {
-  name        = "PosgreSQL Security Group"
-  description = "Security Group for Flask, PosgreSQL"
-  vpc_id      = aws_vpc.VPC_FlaskPipeline.id
-
-  dynamic "ingress" {
-    for_each = ["5432", "5000"]
-    content {
-      from_port   = ingress.value
-      to_port     = ingress.value
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "PostgreSQL Database SG"
-  }
-}
-
-# Launch Configuration for Auto-Scaling Group
-resource "aws_launch_configuration" "Database-PostgreSQL-LC" {
-  name          = "Postgres-Database"
-  image_id      = data.aws_ami.Latest_Ubuntu.id
-  instance_type = var.Instance_type
-
-  user_data = file("../../Bash/database.sh")
-
-  security_groups = [aws_security_group.Database_SG.id]
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-# Auto-Scaling Group for Database
-resource "aws_autoscaling_group" "Database-PostgreSQL-ASG" {
-  desired_capacity    = 1
-  max_size            = 1
-  min_size            = 1
-  vpc_zone_identifier = [aws_subnet.Private_A.id, aws_subnet.Private_B.id]
-
-  launch_configuration = aws_launch_configuration.Database-PostgreSQL-LC.id
-
-  tag {
-    key                 = "Name"
-    value               = "Database-ASG"
-    propagate_at_launch = true
-  }
-}
-
-#------------Bastion Host-----------------
 # Security Group for Bastion Host
 resource "aws_security_group" "Bastion_Host_SG" {
   name        = "Bastion Host Security Group"
@@ -348,9 +288,9 @@ resource "aws_eks_node_group" "Worker_Nodes" {
   subnet_ids      = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
 
   scaling_config {
-    desired_size = 2
-    max_size     = 4
-    min_size     = 2
+    desired_size = 3
+    max_size     = 6
+    min_size     = 3
   }
   instance_types = ["t3.micro"]
 
@@ -369,6 +309,48 @@ resource "aws_eks_node_group" "Worker_Nodes" {
   ]
 }
 
+# Development EKS Cluster
+resource "aws_eks_cluster" "EKS_Dev" {
+  name     = "EKS_FlaskPipeline_Dev"
+  role_arn = aws_iam_role.Main_Role.arn
+
+  vpc_config {
+    subnet_ids = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.Main_Role-AmazonEKSClusterPolicy
+  ]
+}
+
+# Create Node Group Dev
+resource "aws_eks_node_group" "Worker_Nodes" {
+  cluster_name    = aws_eks_cluster.EKS.name
+  node_group_name = "Node-FlaskPipeline-Dev"
+  node_role_arn   = aws_iam_role.Node_Role.arn
+  subnet_ids      = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
+
+  scaling_config {
+    desired_size = 3
+    max_size     = 6
+    min_size     = 3
+  }
+  instance_types = ["t3.micro"]
+
+  remote_access {
+    ec2_ssh_key = "Virginia"
+  }
+
+  tags = {
+    Environment = "Development"
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.Node_Role-AmazonEKSWorkerNodePolicy,
+    aws_iam_role_policy_attachment.Node_Role-AmazonEKS_CNI_Policy,
+    aws_iam_role_policy_attachment.Node_Role-AmazonEC2ContainerRegistryReadOnly,
+  ]
+}
 #------------Route53 DNS and ACM-----------------
 
 # Create ACM Request
