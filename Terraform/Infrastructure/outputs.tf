@@ -13,12 +13,14 @@ output "VPC_cidr" {
   description = "My VPC CIDR Block"
 }
 
-output "Public_Subnets_ID" {
-  value       = aws_subnet.Public_Subnets[*].id
-  description = "Public Subnets ID's"
+output "EKS_ID" {
+  value = aws_eks_cluster.EKS.id
 }
 
-output "EKS_Security_Group_ID" {
-  description = "Security group of EKS Cluster and Worker Nodes"
-  value       = aws_security_group.EKS_SG.id
+output "Public_Subnet_A" {
+  value = aws_subnet.Public_A.cidr_block
+}
+
+output "Public_Subnet_B" {
+  value = aws_subnet.Public_B.cidr_block
 }

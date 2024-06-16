@@ -43,16 +43,26 @@ resource "aws_internet_gateway" "IG_FlaskPipeline" {
 # Data about Availability zones
 data "aws_availability_zones" "Availability" {}
 
-# Create 2 Public Subnets in different Availability Zones:A, B
-resource "aws_subnet" "Public_Subnets" {
-  count             = length(var.Public_Subnet_CIDR)
+# Create 2 Public Subnets in different Availability Zones: A, B
+resource "aws_subnet" "Public_A" {
   vpc_id            = aws_vpc.VPC_FlaskPipeline.id
-  cidr_block        = element(var.Public_Subnet_CIDR, count.index)
-  availability_zone = data.aws_availability_zones.Availability.names[count.index]
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "${var.Region}a"
   # Enable Auto-assigned IPv4
   map_public_ip_on_launch = true
   tags = {
-    Name = "Public Subnet ${count.index + 1}"
+    Name = "Public Subnet A"
+  }
+}
+
+resource "aws_subnet" "Public_B" {
+  vpc_id            = aws_vpc.VPC_FlaskPipeline.id
+  cidr_block        = "10.0.4.0/24"
+  availability_zone = "${var.Region}a"
+  # Enable Auto-assigned IPv4
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "Public Subnet B"
   }
 }
 
@@ -68,53 +78,112 @@ resource "aws_route_table" "Public_Subnets" {
   }
 }
 
-# Attach Public Subnets to Route Table
-resource "aws_route_table_association" "Public_Routes" {
-  count          = length(aws_subnet.Public_Subnets[*].id)
+# Attach Subnets to Route Table
+resource "aws_route_table_association" "RouteTable_Attach_Subnet_A" {
+  subnet_id      = aws_subnet.Public_A.id
   route_table_id = aws_route_table.Public_Subnets.id
-  subnet_id      = element(aws_subnet.Public_Subnets[*].id, count.index)
 }
 
+resource "aws_route_table_association" "RouteTable_Attach_Subnet_B" {
+  subnet_id      = aws_subnet.Public_B.id
+  route_table_id = aws_route_table.Public_Subnets.id
+}
 
 #--------------------EKS Cluster-----------------------
-# Dynamic Security Group for EKS and Worker Nodes
-resource "aws_security_group" "EKS_SG" {
-  name        = "EKS Security Group"
-  description = "Security Group for EKS Cluster and Worker Nodes"
-  vpc_id      = aws_vpc.VPC_FlaskPipeline.id
 
-  dynamic "ingress" {
-    for_each = ["8080", "443", "80", "5000", "10250"]
-    content {
-      from_port   = ingress.value
-      to_port     = ingress.value
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+# IAM role for EKS
+data "aws_iam_policy_document" "Assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
     }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "Main_Role" {
+  name               = "eks-cluster-cloud"
+  assume_role_policy = data.aws_iam_policy_document.Assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "Main_Role-AmazonEKSClusterPolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.Main_Role.name
+}
+
+#EKS Cluster
+resource "aws_eks_cluster" "EKS" {
+  name     = "EKS_FlaskPipeline"
+  role_arn = aws_iam_role.Main_Role.arn
+
+  vpc_config {
+    subnet_ids = [aws_subnet.Public_A, aws_subnet.Public_B]
   }
 
-  ingress {
-    from_port   = 30000
-    to_port     = 32767
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  depends_on = [
+    aws_iam_role_policy_attachment.Main_Role-AmazonEKSClusterPolicy
+  ]
+}
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
-  }
+resource "aws_iam_role" "Node_Role" {
+  name = "EKS_Node"
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+  assume_role_policy = jsonencode({
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
+    }]
+    Version = "2012-10-17"
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "Node_Role-AmazonEKSWorkerNodePolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  role       = aws_iam_role.Node_Role.name
+}
+
+resource "aws_iam_role_policy_attachment" "Node_Role-AmazonEKS_CNI_Policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  role       = aws_iam_role.Node_Role.name
+}
+
+resource "aws_iam_role_policy_attachment" "Node_Role-AmazonEC2ContainerRegistryReadOnly" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  role       = aws_iam_role.Node_Role.name
+}
+
+# Create Node Group
+resource "aws_eks_node_group" "Worker_Nodes" {
+  cluster_name    = aws_eks_cluster.EKS.name
+  node_group_name = "Node-FlaskPipeline"
+  node_role_arn   = aws_iam_role.Node_Role.arn
+  subnet_ids      = [aws_subnet.Public_A, aws_subnet.Public_B]
+
+  scaling_config {
+    desired_size = 2
+    max_size     = 4
+    min_size     = 2
+  }
+  instance_types = ["t3.micro"]
+
+  remote_access {
+    ec2_ssh_key = "Frankfurt"
   }
 
   tags = {
-    Name = "EKS SG"
+    Environment = "Production"
   }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.Node_Role-AmazonEKSWorkerNodePolicy,
+    aws_iam_role_policy_attachment.Node_Role-AmazonEKS_CNI_Policy,
+    aws_iam_role_policy_attachment.Node_Role-AmazonEC2ContainerRegistryReadOnly,
+  ]
 }
