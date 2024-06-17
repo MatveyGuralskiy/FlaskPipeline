@@ -112,7 +112,7 @@ resource "aws_subnet" "Private_B" {
 resource "aws_route_table" "Private_Route_Table_A" {
   vpc_id = aws_vpc.VPC_FlaskPipeline.id
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block = "10.0.0.0/16"
     gateway_id = "local"
   }
   tags = {
@@ -123,7 +123,7 @@ resource "aws_route_table" "Private_Route_Table_A" {
 resource "aws_route_table" "Private_Route_Table_B" {
   vpc_id = aws_vpc.VPC_FlaskPipeline.id
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block = "10.0.0.0/16"
     gateway_id = "local"
   }
   tags = {
@@ -288,9 +288,9 @@ resource "aws_eks_node_group" "Worker_Nodes" {
   subnet_ids      = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
 
   scaling_config {
-    desired_size = 3
-    max_size     = 6
-    min_size     = 3
+    desired_size = 1
+    max_size     = 3
+    min_size     = 1
   }
   instance_types = ["t3.micro"]
 
@@ -308,7 +308,7 @@ resource "aws_eks_node_group" "Worker_Nodes" {
     aws_iam_role_policy_attachment.Node_Role-AmazonEC2ContainerRegistryReadOnly,
   ]
 }
-
+/*
 # Development EKS Cluster
 resource "aws_eks_cluster" "EKS_Dev" {
   name     = "EKS_FlaskPipeline_Dev"
@@ -324,8 +324,8 @@ resource "aws_eks_cluster" "EKS_Dev" {
 }
 
 # Create Node Group Dev
-resource "aws_eks_node_group" "Worker_Nodes" {
-  cluster_name    = aws_eks_cluster.EKS.name
+resource "aws_eks_node_group" "Worker_Nodes_Dev" {
+  cluster_name    = aws_eks_cluster.EKS_Dev.name
   node_group_name = "Node-FlaskPipeline-Dev"
   node_role_arn   = aws_iam_role.Node_Role.arn
   subnet_ids      = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
@@ -351,6 +351,7 @@ resource "aws_eks_node_group" "Worker_Nodes" {
     aws_iam_role_policy_attachment.Node_Role-AmazonEC2ContainerRegistryReadOnly,
   ]
 }
+*/
 #------------Route53 DNS and ACM-----------------
 
 # Create ACM Request

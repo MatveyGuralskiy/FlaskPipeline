@@ -183,6 +183,7 @@ resource "aws_instance" "Master_Instance" {
   subnet_id         = aws_subnet.Public_A.id
   security_groups   = [aws_security_group.SG_Development.id]
   availability_zone = "${var.Region}a"
+  key_name          = "Frankfurt"
   # Bash script to install tools for Master
   user_data = file("../../Bash/master_instance.sh")
   tags = {
