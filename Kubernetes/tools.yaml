@@ -1,0 +1,8 @@
+#---------------------------
+#FlaskPipeline Project
+#Created by Matvey Guralskiy
+#---------------------------
+cloneHtdocsFromGit:
+     enabled    : true
+     repository : https://github.com/MatveyGuralskiy/FlaskPipeline
+     branch     : main

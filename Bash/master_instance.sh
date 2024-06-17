@@ -31,9 +31,6 @@ sudo usermod -aG docker $USER
 # To Add Jenkins User to Docker
 sudo usermod -aG docker jenkins
 
-# Reboot System
-sudo reboot
-
 #Install Docker-Compose
 sudo apt install -y docker-compose
 
@@ -101,3 +98,7 @@ sudo chmod +x /usr/local/bin/kubectl
 # Install Ansible
 sudo apt update
 sudo apt install -y ansible
+
+# Install Helm
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+

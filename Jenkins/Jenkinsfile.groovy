@@ -188,15 +188,16 @@ pipeline {
                 }
             }
         }
-    // Send Email if Job Failed
-    post {
-        failure {
-            emailext (
-                subject: "Build Failed: ${currentBuild.fullDisplayName}",
-                body: "Your Jenkins build has failed. Check the console output for details",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                to: "mathewguralskiy@gmail.com"
-            )
+        // Send Email if Job Failed
+        post {
+            failure {
+                emailext (
+                    subject: "Build Failed: ${currentBuild.fullDisplayName}",
+                    body: "Your Jenkins build has failed. Check the console output for details",
+                    recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                    to: "mathewguralskiy@gmail.com"
+                )
+            }
         }
     }
 }

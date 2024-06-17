@@ -28,12 +28,12 @@ output "Public_Subnet_B" {
   description = "Public Subnet B USA CIDR Block"
 }
 
-output "Private_Subnet_A" {
+output "Private_A" {
   value       = aws_subnet.Private_A.id
   description = "Private Subnet A USA CIDR Block"
 }
 
-output "Private_Subnet_A" {
+output "Private_B" {
   value       = aws_subnet.Private_B.id
   description = "Private Subnet B USA CIDR Block"
 }
