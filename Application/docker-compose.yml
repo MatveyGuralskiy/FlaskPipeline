@@ -12,5 +12,3 @@ services:
       - "80:80"
     env_file:
       - .env
-    volumes:
-      - ./data:/app/data
