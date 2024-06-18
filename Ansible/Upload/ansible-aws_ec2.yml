@@ -1,7 +1,0 @@
----
-plugin: amazon.aws.aws_ec2
-
-hostnames:
-  - ip-address
-  - dns-name
-...
