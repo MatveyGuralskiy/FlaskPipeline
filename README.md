@@ -72,6 +72,7 @@ This setup ensures that the application is rigorously tested, secure, and automa
 <br>
 <br>
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/FlaskPipeline-2.jpeg?raw=true">
+
 ### 📱 Application for Docker Image Built With
 
 * Flask
@@ -85,6 +86,16 @@ This setup ensures that the application is rigorously tested, secure, and automa
 <h2>📂 Repository</h2>
 <p>
   |-- /Application
+
+  |-- /Bash
+
+  |-- /Database
+
+  |-- /Docker
+
+  |-- /Jenkins
+
+  |-- /Monitoring
 
   |-- /Screens
 
