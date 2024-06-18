@@ -292,7 +292,11 @@ resource "aws_eks_node_group" "Worker_Nodes" {
     max_size     = 12
     min_size     = 8
   }
-  instance_types = ["t3.micro"]
+
+  launch_template {
+    name    = aws_launch_template.EKS_Node_Template.name
+    version = aws_launch_template.EKS_Node_Template.latest_version
+  }
 
   remote_access {
     ec2_ssh_key = "Virginia"
@@ -308,6 +312,13 @@ resource "aws_eks_node_group" "Worker_Nodes" {
     aws_iam_role_policy_attachment.Node_Role-AmazonEC2ContainerRegistryReadOnly,
   ]
 }
+
+resource "aws_launch_template" "EKS_Node_Template" {
+  name          = "EKS_Node_Template"
+  instance_type = "t3.micro"
+  user_data     = "../../Bash/worker_node.sh"
+}
+
 /*
 # Development EKS Cluster
 resource "aws_eks_cluster" "EKS_Dev" {
