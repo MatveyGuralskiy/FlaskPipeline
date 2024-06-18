@@ -288,9 +288,9 @@ resource "aws_eks_node_group" "Worker_Nodes" {
   subnet_ids      = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
 
   scaling_config {
-    desired_size = 1
-    max_size     = 3
-    min_size     = 1
+    desired_size = 8
+    max_size     = 12
+    min_size     = 8
   }
   instance_types = ["t3.micro"]
 
@@ -331,9 +331,9 @@ resource "aws_eks_node_group" "Worker_Nodes_Dev" {
   subnet_ids      = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
 
   scaling_config {
-    desired_size = 3
-    max_size     = 6
-    min_size     = 3
+    desired_size = 8
+    max_size     = 12
+    min_size     = 8
   }
   instance_types = ["t3.micro"]
 
