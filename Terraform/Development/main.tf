@@ -198,7 +198,7 @@ resource "aws_security_group" "SG_Development" {
   vpc_id      = aws_vpc.VPC_FlaskPipeline.id
 
   dynamic "ingress" {
-    for_each = ["5432", "5000", "8000", "8080", "9000", "80", "22", "443"]
+    for_each = ["5432", "5000", "8000", "8080", "9000", "80", "22", "443", "465"]
     content {
       from_port   = ingress.value
       to_port     = ingress.value
@@ -215,6 +215,6 @@ resource "aws_security_group" "SG_Development" {
   }
 
   tags = {
-    Name = "PostgreSQL Database SG"
+    Name = "Master SG"
   }
 }
