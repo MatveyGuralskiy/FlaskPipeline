@@ -14,7 +14,7 @@ pipeline {
         DOCKER_VERSION = 'V1.0'
         SECRET_ENV = credentials('secret-env')
     }
-     
+    // Stages of Pipeline
     stages {
         // Clean Up Workspace for Pipeline
         stage('Clean Workspace') {
