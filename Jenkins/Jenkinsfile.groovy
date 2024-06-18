@@ -11,7 +11,7 @@ pipeline {
         AWS_ACCESS_KEY_ID     = credentials('access-key')
         AWS_SECRET_ACCESS_KEY = credentials('secret-key')
         SONAR_LOGIN_KEY = credentials('sonar-project')
-        DOCKER_VERSION = 'V1.0'
+        DOCKER_VERSION = 'V2.0'
         SECRET_ENV = credentials('secret-env')
     }
      
