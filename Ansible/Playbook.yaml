@@ -1,0 +1,14 @@
+---
+- name: Update EKS nodes
+  hosts: all
+  become: yes
+  tasks:
+  - name: Check nodes ping
+    ping:
+
+    - name: Update packages
+      yum:
+        name: '*'
+        state: latest
+      become: yes
+---
