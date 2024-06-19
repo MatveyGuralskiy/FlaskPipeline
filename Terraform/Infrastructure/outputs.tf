@@ -12,12 +12,12 @@ output "VPC_cidr" {
   value       = aws_vpc.VPC_FlaskPipeline.cidr_block
   description = "My VPC CIDR Block"
 }
-
+/*
 output "EKS_ID" {
   value       = aws_eks_cluster.EKS.id
   description = "EKS Cluster Id"
 }
-
+*/
 output "Public_Subnet_A" {
   value       = aws_subnet.Public_A.cidr_block
   description = "Public Subnet A USA CIDR Block"
