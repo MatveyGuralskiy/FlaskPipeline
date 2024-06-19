@@ -39,5 +39,7 @@ output "Private_B" {
 }
 
 output "Certificate_Arn" {
-  value = aws_acm_certificate.FlaskPipeline_cert.arn
+  value       = aws_acm_certificate.FlaskPipeline_cert.arn
+  description = "Certificate SSL ARN"
 }
+

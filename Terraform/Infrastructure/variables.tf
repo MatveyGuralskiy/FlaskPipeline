@@ -9,6 +9,12 @@ variable "Region" {
   default     = "us-east-1"
 }
 
+variable "GER_Region" {
+  description = "AWS Region for the peer VPC"
+  type        = string
+  default     = "eu-central-1"
+}
+
 variable "Environment" {
   description = "Environment for the Project"
   type        = string

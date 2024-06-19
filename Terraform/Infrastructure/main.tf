@@ -3,8 +3,21 @@
 #Created by Matvey Guralskiy
 #---------------------------
 
+# Provider AWS for Virginia
 provider "aws" {
   region = var.Region
+  default_tags {
+    tags = {
+      Owner   = "Matvey Guralskiy"
+      Created = "Terraform"
+    }
+  }
+}
+
+# Provider AWS for Frankfurt
+provider "aws" {
+  alias  = "ger"
+  region = var.GER_Region
   default_tags {
     tags = {
       Owner   = "Matvey Guralskiy"
@@ -27,6 +40,7 @@ terraform {
 #-----------VPC-------------
 # Create VPC
 resource "aws_vpc" "VPC_FlaskPipeline" {
+  provider   = aws
   cidr_block = var.CIDR_VPC
   tags = {
     Name = "VPC FlaskPipeline"
@@ -35,17 +49,21 @@ resource "aws_vpc" "VPC_FlaskPipeline" {
 
 # Create Internet Gateway and Automatically Attach
 resource "aws_internet_gateway" "IG_FlaskPipeline" {
-  vpc_id = aws_vpc.VPC_FlaskPipeline.id
+  provider = aws
+  vpc_id   = aws_vpc.VPC_FlaskPipeline.id
   tags = {
     Name = "IG FlaskPipeline"
   }
 }
 
 # Data about Availability zones
-data "aws_availability_zones" "Availability" {}
+data "aws_availability_zones" "Availability" {
+  provider = aws
+}
 
 # Create 2 Public Subnets in different Availability Zones: A, B
 resource "aws_subnet" "Public_A" {
+  provider          = aws
   vpc_id            = aws_vpc.VPC_FlaskPipeline.id
   cidr_block        = "10.0.3.0/24"
   availability_zone = "${var.Region}a"
@@ -57,6 +75,7 @@ resource "aws_subnet" "Public_A" {
 }
 
 resource "aws_subnet" "Public_B" {
+  provider          = aws
   vpc_id            = aws_vpc.VPC_FlaskPipeline.id
   cidr_block        = "10.0.4.0/24"
   availability_zone = "${var.Region}b"
@@ -69,7 +88,8 @@ resource "aws_subnet" "Public_B" {
 
 # Public Route Table
 resource "aws_route_table" "Public_Subnets" {
-  vpc_id = aws_vpc.VPC_FlaskPipeline.id
+  provider = aws
+  vpc_id   = aws_vpc.VPC_FlaskPipeline.id
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.IG_FlaskPipeline.id
@@ -81,17 +101,20 @@ resource "aws_route_table" "Public_Subnets" {
 
 # Attach Public Subnets to Route Table
 resource "aws_route_table_association" "RouteTable_Attach_Subnet_A" {
+  provider       = aws
   subnet_id      = aws_subnet.Public_A.id
   route_table_id = aws_route_table.Public_Subnets.id
 }
 
 resource "aws_route_table_association" "RouteTable_Attach_Subnet_B" {
+  provider       = aws
   subnet_id      = aws_subnet.Public_B.id
   route_table_id = aws_route_table.Public_Subnets.id
 }
 
 # Create 2 Private Subnets in different Availability Zones: A, B
 resource "aws_subnet" "Private_A" {
+  provider          = aws
   vpc_id            = aws_vpc.VPC_FlaskPipeline.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "${var.Region}a"
@@ -101,6 +124,7 @@ resource "aws_subnet" "Private_A" {
 }
 
 resource "aws_subnet" "Private_B" {
+  provider          = aws
   vpc_id            = aws_vpc.VPC_FlaskPipeline.id
   cidr_block        = "10.0.2.0/24"
   availability_zone = "${var.Region}b"
@@ -109,8 +133,10 @@ resource "aws_subnet" "Private_B" {
   }
 }
 
+# Create 2 Private Route Tables A, B
 resource "aws_route_table" "Private_Route_Table_A" {
-  vpc_id = aws_vpc.VPC_FlaskPipeline.id
+  provider = aws
+  vpc_id   = aws_vpc.VPC_FlaskPipeline.id
   route {
     cidr_block = "10.0.0.0/16"
     gateway_id = "local"
@@ -121,7 +147,8 @@ resource "aws_route_table" "Private_Route_Table_A" {
 }
 
 resource "aws_route_table" "Private_Route_Table_B" {
-  vpc_id = aws_vpc.VPC_FlaskPipeline.id
+  provider = aws
+  vpc_id   = aws_vpc.VPC_FlaskPipeline.id
   route {
     cidr_block = "10.0.0.0/16"
     gateway_id = "local"
@@ -134,17 +161,145 @@ resource "aws_route_table" "Private_Route_Table_B" {
 
 # Attach Private Subnet A to Route Table
 resource "aws_route_table_association" "Route_Table_Private_A" {
+  provider       = aws
   subnet_id      = aws_subnet.Private_A.id
   route_table_id = aws_route_table.Private_Route_Table_A.id
 }
 
 # Attach Private Subnet B to Route Table
 resource "aws_route_table_association" "Route_Table_Private_B" {
+  provider       = aws
   subnet_id      = aws_subnet.Private_B.id
   route_table_id = aws_route_table.Private_Route_Table_B.id
 }
 
+# Elastic IP for NAT A
+resource "aws_eip" "NAT_A_EIP" {
+  domain = "vpc"
+  tags = {
+    Name = "Elastic IP A - ${var.Environment}"
+  }
+}
+
+# Elastic IP for NAT B
+resource "aws_eip" "NAT_B_EIP" {
+  domain = "vpc"
+  tags = {
+    Name = "Elastic IP B - ${var.Environment}"
+  }
+}
+
+# NAT Gateway A
+resource "aws_nat_gateway" "NAT_A" {
+  allocation_id = aws_eip.NAT_A_EIP.id
+  subnet_id     = aws_subnet.Public_A.id
+  tags = {
+    Name = "NAT Gateway A - ${var.Environment}"
+  }
+}
+
+# NAT Gateway B
+resource "aws_nat_gateway" "NAT_B" {
+  allocation_id = aws_eip.NAT_B_EIP.id
+  subnet_id     = aws_subnet.Public_B.id
+  tags = {
+    Name = "NAT Gateway B - ${var.Environment}"
+  }
+}
+#---------------VPC Peering---------------
+# Account ID
+data "aws_caller_identity" "current" {
+  provider = aws
+}
+
+# Remote State of Development Terraform files
+data "terraform_remote_state" "remote_state" {
+  backend = "s3"
+
+  config = {
+    bucket = "flaskpipeline-project-development"
+    key    = "Development/terraform.tfstate"
+    region = "eu-central-1"
+  }
+}
+
+# VPC Peering Connection between VPC Virginia and VPC Frankfurt
+resource "aws_vpc_peering_connection" "VPC_Peering" {
+  provider      = aws
+  vpc_id        = aws_vpc.VPC_FlaskPipeline.id
+  peer_vpc_id   = data.terraform_remote_state.remote_state.outputs.VPC_ID
+  peer_owner_id = data.aws_caller_identity.current.account_id
+  peer_region   = var.GER_Region
+  auto_accept   = false
+
+  tags = {
+    Side = "Requester"
+  }
+}
+
+# VPC Peering Automatic Accepter
+resource "aws_vpc_peering_connection_accepter" "accepter" {
+  provider                  = aws.ger
+  vpc_peering_connection_id = aws_vpc_peering_connection.VPC_Peering.id
+  auto_accept               = true
+
+  tags = {
+    Side = "Accepter"
+  }
+}
+
+# Attach Routing of VPC between each other
+resource "aws_route" "Route_Private_A_vpc1_to_vpc2" {
+  provider                  = aws
+  route_table_id            = aws_route_table.Private_Route_Table_A.id
+  destination_cidr_block    = "192.168.0.0/16"
+  vpc_peering_connection_id = aws_vpc_peering_connection.VPC_Peering.id
+}
+
+resource "aws_route" "Route_Private_A_vpc2_to_vpc1" {
+  provider                  = aws.ger
+  route_table_id            = data.terraform_remote_state.remote_state.outputs.Private_Route_Table_A_ID
+  destination_cidr_block    = "10.0.0.0/16"
+  vpc_peering_connection_id = aws_vpc_peering_connection.VPC_Peering.id
+}
+
+resource "aws_route" "Route_Private_B_vpc1_to_vpc2" {
+  provider                  = aws
+  route_table_id            = aws_route_table.Private_Route_Table_B.id
+  destination_cidr_block    = "192.168.0.0/16"
+  vpc_peering_connection_id = aws_vpc_peering_connection.VPC_Peering.id
+}
+
+resource "aws_route" "Route_Private_B_vpc2_to_vpc1" {
+  provider                  = aws.ger
+  route_table_id            = data.terraform_remote_state.remote_state.outputs.Private_Route_Table_B_ID
+  destination_cidr_block    = "10.0.0.0/16"
+  vpc_peering_connection_id = aws_vpc_peering_connection.VPC_Peering.id
+}
+
+resource "aws_route" "Route_Public_Subnets_vpc1_to_vpc2" {
+  provider                  = aws
+  route_table_id            = aws_route_table.Public_Subnets.id
+  destination_cidr_block    = "192.168.0.0/16"
+  vpc_peering_connection_id = aws_vpc_peering_connection.VPC_Peering.id
+}
+
+resource "aws_route" "Route_Public_A_vpc2_to_vpc1" {
+  provider                  = aws.ger
+  route_table_id            = data.terraform_remote_state.remote_state.outputs.Public_RouteTable_A_ID
+  destination_cidr_block    = "10.0.0.0/16"
+  vpc_peering_connection_id = aws_vpc_peering_connection.VPC_Peering.id
+}
+
+resource "aws_route" "Route_Public_B_vpc2_to_vpc1" {
+  provider                  = aws.ger
+  route_table_id            = data.terraform_remote_state.remote_state.outputs.Public_RouteTable_B_ID
+  destination_cidr_block    = "10.0.0.0/16"
+  vpc_peering_connection_id = aws_vpc_peering_connection.VPC_Peering.id
+}
+
 #------------Bastion Host-----------------
+
 # Image for Launch Configuration
 data "aws_ami" "Latest_Ubuntu" {
   owners      = ["099720109477"]
@@ -211,7 +366,7 @@ resource "aws_autoscaling_group" "Bastion-Host-ASG" {
 }
 
 #--------------------EKS Cluster-----------------------
-
+/*
 # IAM role for EKS
 data "aws_iam_policy_document" "Assume_role" {
   statement {
@@ -226,11 +381,13 @@ data "aws_iam_policy_document" "Assume_role" {
   }
 }
 
+# IAM role for EKS
 resource "aws_iam_role" "Main_Role" {
   name               = "eks-cluster-cloud"
   assume_role_policy = data.aws_iam_policy_document.Assume_role.json
 }
 
+# IAM role for EKS
 resource "aws_iam_role_policy_attachment" "Main_Role-AmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.Main_Role.name
@@ -250,6 +407,7 @@ resource "aws_eks_cluster" "EKS" {
   ]
 }
 
+# IAM Role for Nodes
 resource "aws_iam_role" "Node_Role" {
   name = "EKS_Node"
 
@@ -265,6 +423,7 @@ resource "aws_iam_role" "Node_Role" {
   })
 }
 
+# Policies for Nodes
 resource "aws_iam_role_policy_attachment" "Node_Role-AmazonEKSWorkerNodePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   role       = aws_iam_role.Node_Role.name
@@ -313,13 +472,14 @@ resource "aws_eks_node_group" "Worker_Nodes" {
   ]
 }
 
+# Launch Template for EKS Nodes
 resource "aws_launch_template" "EKS_Node_Template" {
   name          = "EKS_Node_Template"
   instance_type = "t3.micro"
   user_data     = "../../Bash/worker_node.sh"
 }
 
-/*
+
 # Development EKS Cluster
 resource "aws_eks_cluster" "EKS_Dev" {
   name     = "EKS_FlaskPipeline_Dev"
@@ -342,9 +502,9 @@ resource "aws_eks_node_group" "Worker_Nodes_Dev" {
   subnet_ids      = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
 
   scaling_config {
-    desired_size = 8
-    max_size     = 12
-    min_size     = 8
+    desired_size = 1
+    max_size     = 2
+    min_size     = 1
   }
   instance_types = ["t3.micro"]
 
