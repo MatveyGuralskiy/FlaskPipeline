@@ -106,6 +106,64 @@ resource "aws_route_table_association" "RouteTable_Attach_B" {
   route_table_id = aws_route_table.Public_RouteTable_B.id
 }
 
+
+# Create 2 Private Subnets in different Availability Zones: A, B
+resource "aws_subnet" "Private_A" {
+  vpc_id            = aws_vpc.VPC_FlaskPipeline.id
+  cidr_block        = "192.168.3.0/24"
+  availability_zone = "${var.Region}a"
+
+  tags = {
+    Name = "Private Subnet - ${var.Environment}"
+  }
+}
+
+resource "aws_subnet" "Private_B" {
+  vpc_id            = aws_vpc.VPC_FlaskPipeline.id
+  cidr_block        = "192.168.4.0/24"
+  availability_zone = "${var.Region}b"
+
+  tags = {
+    Name = "Private Subnet - ${var.Environment}"
+  }
+}
+
+resource "aws_route_table" "Private_Route_Table_A" {
+  vpc_id = aws_vpc.VPC_FlaskPipeline.id
+  route {
+    cidr_block = "192.168.0.0/16"
+    gateway_id = "local"
+  }
+  tags = {
+    Name = "Route Table Private Subnet A- ${var.Environment}"
+  }
+}
+
+resource "aws_route_table" "Private_Route_Table_B" {
+  vpc_id = aws_vpc.VPC_FlaskPipeline.id
+  route {
+    cidr_block = "192.168.0.0/16"
+    gateway_id = "local"
+  }
+  tags = {
+    Name = "Route Table Private Subnet B- ${var.Environment}"
+  }
+
+}
+
+# Attach Private Subnet A to Route Table
+resource "aws_route_table_association" "Route_Table_Private_A" {
+  subnet_id      = aws_subnet.Private_A.id
+  route_table_id = aws_route_table.Private_Route_Table_A.id
+}
+
+# Attach Private Subnet B to Route Table
+resource "aws_route_table_association" "Route_Table_Private_B" {
+  subnet_id      = aws_subnet.Private_B.id
+  route_table_id = aws_route_table.Private_Route_Table_B.id
+}
+
+
 #-----------Database and Master-------------
 # Image for Database and Master
 data "aws_ami" "Latest_Ubuntu" {
@@ -137,7 +195,7 @@ resource "aws_autoscaling_group" "Postgres_Database-ASG" {
   desired_capacity    = 1
   max_size            = 1
   min_size            = 1
-  vpc_zone_identifier = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
+  vpc_zone_identifier = [aws_subnet.Private_A.id, aws_subnet.Private_B.id]
 
   launch_configuration = aws_launch_configuration.Postgres_Database-LC.id
 
@@ -150,12 +208,12 @@ resource "aws_autoscaling_group" "Postgres_Database-ASG" {
 
 # Dynamic Security Group for Database
 resource "aws_security_group" "Database_SG" {
-  name        = "PosgreSQL Security Group"
-  description = "Security Group for Flask, PosgreSQL"
+  name        = "PostgreSQL Security Group"
+  description = "Security Group for PostgreSQL"
   vpc_id      = aws_vpc.VPC_FlaskPipeline.id
 
   dynamic "ingress" {
-    for_each = ["5432", "5000"]
+    for_each = ["5432"]
     content {
       from_port   = ingress.value
       to_port     = ingress.value
