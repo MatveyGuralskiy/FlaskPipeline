@@ -91,6 +91,10 @@ resource "aws_route_table" "Public_Subnets" {
   provider = aws
   vpc_id   = aws_vpc.VPC_FlaskPipeline.id
   route {
+    cidr_block = var.CIDR_VPC
+    gateway_id = "local"
+  }
+  route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.IG_FlaskPipeline.id
   }
@@ -112,100 +116,6 @@ resource "aws_route_table_association" "RouteTable_Attach_Subnet_B" {
   route_table_id = aws_route_table.Public_Subnets.id
 }
 
-# Create 2 Private Subnets in different Availability Zones: A, B
-resource "aws_subnet" "Private_A" {
-  provider          = aws
-  vpc_id            = aws_vpc.VPC_FlaskPipeline.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "${var.Region}a"
-  tags = {
-    Name = "Private Subnet A"
-  }
-}
-
-resource "aws_subnet" "Private_B" {
-  provider          = aws
-  vpc_id            = aws_vpc.VPC_FlaskPipeline.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = "${var.Region}b"
-  tags = {
-    Name = "Private Subnet B"
-  }
-}
-
-# Create 2 Private Route Tables A, B
-resource "aws_route_table" "Private_Route_Table_A" {
-  provider = aws
-  vpc_id   = aws_vpc.VPC_FlaskPipeline.id
-  route {
-    cidr_block = "10.0.0.0/16"
-    gateway_id = "local"
-  }
-  tags = {
-    Name = "Route Table Private Subnet A- ${var.Environment}"
-  }
-}
-
-resource "aws_route_table" "Private_Route_Table_B" {
-  provider = aws
-  vpc_id   = aws_vpc.VPC_FlaskPipeline.id
-  route {
-    cidr_block = "10.0.0.0/16"
-    gateway_id = "local"
-  }
-  tags = {
-    Name = "Route Table Private Subnet B- ${var.Environment}"
-  }
-
-}
-
-# Attach Private Subnet A to Route Table
-resource "aws_route_table_association" "Route_Table_Private_A" {
-  provider       = aws
-  subnet_id      = aws_subnet.Private_A.id
-  route_table_id = aws_route_table.Private_Route_Table_A.id
-}
-
-# Attach Private Subnet B to Route Table
-resource "aws_route_table_association" "Route_Table_Private_B" {
-  provider       = aws
-  subnet_id      = aws_subnet.Private_B.id
-  route_table_id = aws_route_table.Private_Route_Table_B.id
-}
-
-# Elastic IP for NAT A
-resource "aws_eip" "NAT_A_EIP" {
-  domain = "vpc"
-  tags = {
-    Name = "Elastic IP A - ${var.Environment}"
-  }
-}
-
-# Elastic IP for NAT B
-resource "aws_eip" "NAT_B_EIP" {
-  domain = "vpc"
-  tags = {
-    Name = "Elastic IP B - ${var.Environment}"
-  }
-}
-
-# NAT Gateway A
-resource "aws_nat_gateway" "NAT_A" {
-  allocation_id = aws_eip.NAT_A_EIP.id
-  subnet_id     = aws_subnet.Public_A.id
-  tags = {
-    Name = "NAT Gateway A - ${var.Environment}"
-  }
-}
-
-# NAT Gateway B
-resource "aws_nat_gateway" "NAT_B" {
-  allocation_id = aws_eip.NAT_B_EIP.id
-  subnet_id     = aws_subnet.Public_B.id
-  tags = {
-    Name = "NAT Gateway B - ${var.Environment}"
-  }
-}
 #---------------VPC Peering---------------
 # Account ID
 data "aws_caller_identity" "current" {
@@ -249,24 +159,11 @@ resource "aws_vpc_peering_connection_accepter" "accepter" {
 }
 
 # Attach Routing of VPC between each other
-resource "aws_route" "Route_Private_A_vpc1_to_vpc2" {
-  provider                  = aws
-  route_table_id            = aws_route_table.Private_Route_Table_A.id
-  destination_cidr_block    = "192.168.0.0/16"
-  vpc_peering_connection_id = aws_vpc_peering_connection.VPC_Peering.id
-}
 
 resource "aws_route" "Route_Private_A_vpc2_to_vpc1" {
   provider                  = aws.ger
   route_table_id            = data.terraform_remote_state.remote_state.outputs.Private_Route_Table_A_ID
   destination_cidr_block    = "10.0.0.0/16"
-  vpc_peering_connection_id = aws_vpc_peering_connection.VPC_Peering.id
-}
-
-resource "aws_route" "Route_Private_B_vpc1_to_vpc2" {
-  provider                  = aws
-  route_table_id            = aws_route_table.Private_Route_Table_B.id
-  destination_cidr_block    = "192.168.0.0/16"
   vpc_peering_connection_id = aws_vpc_peering_connection.VPC_Peering.id
 }
 
@@ -366,7 +263,7 @@ resource "aws_autoscaling_group" "Bastion-Host-ASG" {
 }
 
 #--------------------EKS Cluster-----------------------
-/*
+
 # IAM role for EKS
 data "aws_iam_policy_document" "Assume_role" {
   statement {
@@ -451,12 +348,12 @@ resource "aws_eks_node_group" "Worker_Nodes" {
     max_size     = 12
     min_size     = 8
   }
-
+  /* Developing Stage
   launch_template {
     name    = aws_launch_template.EKS_Node_Template.name
     version = aws_launch_template.EKS_Node_Template.latest_version
   }
-
+  */
   remote_access {
     ec2_ssh_key = "Virginia"
   }
@@ -471,14 +368,14 @@ resource "aws_eks_node_group" "Worker_Nodes" {
     aws_iam_role_policy_attachment.Node_Role-AmazonEC2ContainerRegistryReadOnly,
   ]
 }
-
+/* Developing Stage
 # Launch Template for EKS Nodes
 resource "aws_launch_template" "EKS_Node_Template" {
   name          = "EKS_Node_Template"
   instance_type = "t3.micro"
   user_data     = "../../Bash/worker_node.sh"
 }
-
+*/
 
 # Development EKS Cluster
 resource "aws_eks_cluster" "EKS_Dev" {
@@ -522,7 +419,7 @@ resource "aws_eks_node_group" "Worker_Nodes_Dev" {
     aws_iam_role_policy_attachment.Node_Role-AmazonEC2ContainerRegistryReadOnly,
   ]
 }
-*/
+
 #------------Route53 DNS and ACM-----------------
 
 # Create ACM Request

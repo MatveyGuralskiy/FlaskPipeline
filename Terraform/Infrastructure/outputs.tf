@@ -28,16 +28,6 @@ output "Public_Subnet_B" {
   description = "Public Subnet B USA CIDR Block"
 }
 
-output "Private_A" {
-  value       = aws_subnet.Private_A.id
-  description = "Private Subnet A USA CIDR Block"
-}
-
-output "Private_B" {
-  value       = aws_subnet.Private_B.id
-  description = "Private Subnet B USA CIDR Block"
-}
-
 output "Certificate_Arn" {
   value       = aws_acm_certificate.FlaskPipeline_cert.arn
   description = "Certificate SSL ARN"

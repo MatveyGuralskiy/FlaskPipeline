@@ -131,7 +131,11 @@ resource "aws_subnet" "Private_B" {
 resource "aws_route_table" "Private_Route_Table_A" {
   vpc_id = aws_vpc.VPC_FlaskPipeline.id
   route {
-    cidr_block = "192.168.0.0/16"
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.NAT_A.id
+  }
+  route {
+    cidr_block = var.CIDR_VPC
     gateway_id = "local"
   }
   tags = {
@@ -142,13 +146,51 @@ resource "aws_route_table" "Private_Route_Table_A" {
 resource "aws_route_table" "Private_Route_Table_B" {
   vpc_id = aws_vpc.VPC_FlaskPipeline.id
   route {
-    cidr_block = "192.168.0.0/16"
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.NAT_B.id
+  }
+  route {
+    cidr_block = var.CIDR_VPC
     gateway_id = "local"
   }
   tags = {
     Name = "Route Table Private Subnet B- ${var.Environment}"
   }
 
+}
+
+# Elastic IP for NAT A
+resource "aws_eip" "NAT_A_EIP" {
+  domain = "vpc"
+  tags = {
+    Name = "Elastic IP A - ${var.Environment}"
+  }
+}
+
+# Elastic IP for NAT B
+resource "aws_eip" "NAT_B_EIP" {
+  domain = "vpc"
+  tags = {
+    Name = "Elastic IP B - ${var.Environment}"
+  }
+}
+
+# NAT Gateway A
+resource "aws_nat_gateway" "NAT_A" {
+  allocation_id = aws_eip.NAT_A_EIP.id
+  subnet_id     = aws_subnet.Public_A.id
+  tags = {
+    Name = "NAT Gateway A - ${var.Environment}"
+  }
+}
+
+# NAT Gateway B
+resource "aws_nat_gateway" "NAT_B" {
+  allocation_id = aws_eip.NAT_B_EIP.id
+  subnet_id     = aws_subnet.Public_B.id
+  tags = {
+    Name = "NAT Gateway B - ${var.Environment}"
+  }
 }
 
 # Attach Private Subnet A to Route Table
@@ -180,6 +222,8 @@ resource "aws_launch_configuration" "Postgres_Database-LC" {
   name          = "Postgres-Database"
   image_id      = data.aws_ami.Latest_Ubuntu.id
   instance_type = var.Database_type
+
+  key_name = "Frankfurt"
 
   user_data = file("../../Bash/database.sh")
 
@@ -220,6 +264,13 @@ resource "aws_security_group" "Database_SG" {
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }
+  }
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -263,6 +314,13 @@ resource "aws_security_group" "SG_Development" {
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
     }
+  }
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
