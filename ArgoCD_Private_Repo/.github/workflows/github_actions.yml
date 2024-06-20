@@ -1,0 +1,46 @@
+#-----------------------------
+#FlaskPipeline Project
+#Created by Matvey Guralskiy
+#-----------------------------
+name: Update Version for Helm Chart
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to Update FlaskPipeline Application Deployment'
+        required: true
+
+jobs:
+  update-files:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUBACTIONS }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Set up environment variable
+        run: echo "VERSION_TO_REPLACE=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
+      - name: Update appVersion in Chart.yaml
+        run: |
+          sed -i "s/appVersion: \"[^\"]*\"/appVersion: \"$VERSION_TO_REPLACE\"/" Kubernetes/Chart.yaml
+
+      - name: Update image version in values.yaml
+        run: |
+          sed -i "s/image: matveyguralskiy\/flask-pipeline:[^ ]*/image: matveyguralskiy\/flask-pipeline:$VERSION_TO_REPLACE/" Kubernetes/values.yaml
+
+      - name: Commit changes
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git add Kubernetes/Chart.yaml Kubernetes/values.yaml
+          git commit -m "Update versions in Chart.yaml and values.yaml to $VERSION_TO_REPLACE"
+          git push

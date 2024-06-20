@@ -1,0 +1,8 @@
+#---------------------------
+# FlaskPipeline Project
+# Created by Matvey Guralskiy
+#---------------------------
+replicaCount: 4
+
+container:
+  image: matveyguralskiy/flask-pipeline:V2.0
