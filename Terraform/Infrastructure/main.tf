@@ -221,8 +221,8 @@ resource "aws_security_group" "Bastion_Host_SG" {
   }
 
   ingress {
-    from_port   = 0
-    to_port     = 0
+    from_port   = "-1"
+    to_port     = "-1"
     protocol    = "icmp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -378,6 +378,103 @@ resource "aws_launch_template" "EKS_Node_Template" {
   instance_type = "t3.micro"
   key_name      = "Virginia"
   user_data     = filebase64("../../Bash/worker_node.sh")
+}
+
+#--------------Master Ansible--------------------
+
+resource "aws_instance" "Master_Ansible" {
+  ami               = data.aws_ami.Latest_Ubuntu.id
+  instance_type     = var.Instance_type
+  subnet_id         = aws_subnet.Public_B.id
+  security_groups   = [aws_security_group.Ansible_SG.id]
+  availability_zone = "${var.Region}b"
+  # Bash script to install Ansible
+  user_data = file("../../Bash/master_ansible.sh")
+  tags = {
+    Name = "Master Ansible"
+  }
+}
+
+# Security group for Master Ansible
+resource "aws_security_group" "Ansible_SG" {
+  name        = "Master Ansible Security Group"
+  description = "Security Group for SSH"
+  vpc_id      = aws_vpc.VPC_FlaskPipeline.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = "-1"
+    to_port     = "-1"
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Master Ansible SG"
+  }
+}
+
+#---------Monitoring (Grafana and Prometheus)-------------
+
+resource "aws_instance" "Monitoring" {
+  ami               = data.aws_ami.Latest_Ubuntu.id
+  instance_type     = var.Instance_type
+  subnet_id         = aws_subnet.Public_A.id
+  security_groups   = [aws_security_group.Monitoring_SG.id]
+  availability_zone = "${var.Region}a"
+  # Bash script to install Grafana and Prometheus
+  user_data = file("../../Monitoring/prometheus+grafana.sh")
+  tags = {
+    Name = "Monitoring"
+  }
+}
+
+# Security group for Monitoring
+resource "aws_security_group" "Monitoring_SG" {
+  name        = "Master Ansible Security Group"
+  description = "Security Group for SSH"
+  vpc_id      = aws_vpc.VPC_FlaskPipeline.id
+
+  dynamic "ingress" {
+    for_each = ["3000", "9090", "9100", "22"]
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+
+  ingress {
+    from_port   = "-1"
+    to_port     = "-1"
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Master Ansible SG"
+  }
 }
 
 #------------Route53 DNS and ACM-----------------

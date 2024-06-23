@@ -4,14 +4,11 @@
 #Created by Matvey Guralskiy
 #---------------------------
 #-------------Prometheus Installation----------------
-PROMETHEUS_VERSION="2.51.1"
-PROMETHEUS_FOLDER_CONFIG="/etc/prometheus"
-PROMETHEUS_FOLDER_TSDATA="/etc/prometheus/data"
 
 cd /tmp
-wget https://github.com/prometheus/prometheus/releases/download/v$PROMETHEUS_VERSION/prometheus-$PROMETHEUS_VERSION.linux-amd64.tar.gz
-tar xvfz prometheus-$PROMETHEUS_VERSION.linux-amd64.tar.gz
-cd prometheus-$PROMETHEUS_VERSION.linux-amd64
+wget https://github.com/prometheus/prometheus/releases/download/v2.51.1/prometheus-2.51.1.linux-amd64.tar.gz
+tar xvfz prometheus-2.51.1.linux-amd64.tar.gz
+cd prometheus-2.51.1.linux-amd64
 
 mv prometheus /usr/bin/
 rm -r NOTICE
@@ -19,10 +16,10 @@ rm -r LICENSE
 rm -r promtool
 rm -rf /tmp/prometheus*
 
-mkdir -p $PROMETHEUS_FOLDER_CONFIG
-mkdir -p $PROMETHEUS_FOLDER_TSDATA
+mkdir -p /etc/prometheus
+mkdir -p /etc/prometheus/data
 
-cat <<EOF> $PROMETHEUS_FOLDER_CONFIG/prometheus.yml
+cat <<EOF> /etc/prometheus/prometheus.yml
 global:
   scrape_interval: 15s
 
@@ -37,9 +34,9 @@ useradd -rs /bin/false prometheus
 
 # Set Ownership to files
 chown prometheus:prometheus /usr/bin/prometheus
-chown prometheus:prometheus $PROMETHEUS_FOLDER_CONFIG
-chown prometheus:prometheus $PROMETHEUS_FOLDER_CONFIG/prometheus.yml
-chown prometheus:prometheus $PROMETHEUS_FOLDER_TSDATA
+chown prometheus:prometheus /etc/prometheus
+chown prometheus:prometheus /etc/prometheus/prometheus.yml
+chown prometheus:prometheus /etc/prometheus/data
 
 # Create Systemctl Service to Prometheus
 cat <<EOF> /etc/systemd/system/prometheus.service
@@ -53,8 +50,8 @@ Group=prometheus
 Type=simple
 Restart=on-failure
 ExecStart=/usr/bin/prometheus \
-  --config.file       ${PROMETHEUS_FOLDER_CONFIG}/prometheus.yml \
-  --storage.tsdb.path ${PROMETHEUS_FOLDER_TSDATA}
+  --config.file       /etc/prometheus/prometheus.yml \
+  --storage.tsdb.path /etc/prometheus/data
 
 [Install]
 WantedBy=multi-user.target
@@ -67,7 +64,6 @@ systemctl enable prometheus
 
 
 #-------------Grafana----------------
-GRAFANA_VERSION="10.4.2"
 
 # Get the IP address of the machine
 HOST_IP=$(hostname -I | awk '{print $1}')
@@ -80,8 +76,8 @@ echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stab
 apt-get update
 apt-get install -y adduser libfontconfig1 musl
 
-wget https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_amd64.deb
-dpkg -i grafana_${GRAFANA_VERSION}_amd64.deb
+wget https://dl.grafana.com/oss/release/grafana_10.4.2_amd64.deb
+dpkg -i grafana_10.4.2_amd64.deb
 
 echo "export PATH=/usr/share/grafana/bin:$PATH" >> /etc/profile
 
