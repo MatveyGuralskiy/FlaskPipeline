@@ -41,12 +41,5 @@ EOF
 systemctl daemon-reload
 systemctl start node_exporter
 systemctl enable node_exporter
-EOF
-
-# SSH Public Key
-mkdir -p /home/ec2-user/.ssh
-echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC3K5Cr...Q6ec+myemail@example.com" >> /home/ec2-user/.ssh/authorized_keys
-chown -R ec2-user:ec2-user /home/ec2-user/.ssh
-chmod 600 /home/ec2-user/.ssh/authorized_keys
 
 --==MYBOUNDARY==--
