@@ -14,7 +14,7 @@ pipeline {
         DOCKER_VERSION = 'V1.0'
         SECRET_ENV = credentials('secret-env')
     }
-    // Stages of Pipeline
+     
     stages {
         // Clean Up Workspace for Pipeline
         stage('Clean Workspace') {
@@ -166,36 +166,58 @@ pipeline {
                 }
             }
         }
-        // Prompt for deployment confirmation
+        // Input for Terraform to Deploy
         stage('Confirm Deployment') {
             steps {
                 script {
-                    def userInput = input(id: 'userInput', message: 'Do you want to proceed with the deployment?', parameters: [choice(name: 'Deploy', choices: ['Yes', 'No'], description: 'Choose Yes to deploy, No to skip Terraform Deployment')])
+                    def userInput = input(
+                        id: 'userInput',
+                        message: 'Do you want to proceed with the deployment?',
+                        parameters: [choice(name: 'Deploy', choices: ['Yes', 'No'], description: 'Choose Yes to deploy, No to skip Terraform Deployment')]
+                    )
                     if (userInput == 'No') {
                         currentBuild.result = 'SUCCESS'
-                        error 'Deployment was skipped by user'
+                        echo "Deployment was skipped by user"
+                        env.SKIP_TERRAFORM = true
                     }
                 }
             }
         }
-        // Run Terraform files to create Infrastructure and EKS Cluster
+        // Run Terraform with AWS
         stage('Run Terraform IaaC') {
             when {
-                expression { return currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+                expression {
+                    return currentBuild.result == null || currentBuild.result == 'SUCCESS'
+                }
             }
             steps {
                 script {
+                    // Check if SKIP_TERRAFORM is set to true
+                    if (env.SKIP_TERRAFORM == "true") {
+                        echo "Skipping Terraform deployment as per user choice"
+                        return // Exit stage early
+                    }
+
                     try {
-                        dir('Project/Application/Terraform/Infrastructure') {
-                            sh 'export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"'
-                            sh 'export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"'
-                            sh 'export AWS_REGION="$AWS_REGION"'
-                            sh 'terraform init'
-                            sh 'terraform plan -out=tfplan'
-                            sh 'terraform apply -auto-approve tfplan'
+                        def terraformInput = input(
+                            id: 'terraformInput',
+                            message: 'Do you want to create resources with Terraform?',
+                            parameters: [choice(name: 'Deploy', choices: ['Yes', 'No'], description: 'Choose Yes to deploy, No to skip Terraform Deployment')]
+                        )
+                        if (terraformInput == 'Yes') {
+                            dir('Project/Application/Terraform/Infrastructure') {
+                                sh 'export AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID"'
+                                sh 'export AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY"'
+                                sh 'export AWS_REGION="$AWS_REGION"'
+                                sh 'terraform init'
+                                sh 'terraform plan -out=tfplan'
+                                sh 'terraform apply -auto-approve tfplan'
+                            }
+                            echo "Terraform apply completed successfully"
+                            echo "Finished deployment"
+                        } else {
+                            echo "Skipping Terraform deployment as per user choice"
                         }
-                        echo "Terraform apply completed successfully"
-                        echo "Finished deployment"
                     } catch (Exception e) {
                         error "Failed to run Terraform configuration: ${e.message}"
                     }
