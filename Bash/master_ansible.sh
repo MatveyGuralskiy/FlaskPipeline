@@ -8,12 +8,13 @@ sudo apt update
 sudo apt-get install -y ansible
 
 # Install PIP
-sudo apt install pip
+sudo apt install -y pip
 
 # Install AWS Library
-sudo apt install python3-boto3
+sudo apt install -y python3-boto3
 
 # Clone GitHub Repository
+cd /home/ubuntu/
 git clone https://github.com/MatveyGuralskiy/FlaskPipeline.git
 
 # Install AWS CLI
