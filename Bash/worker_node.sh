@@ -41,6 +41,5 @@ EOF
 systemctl daemon-reload
 systemctl start node_exporter
 systemctl enable node_exporter
-EOF
 
 --==MYBOUNDARY==--
