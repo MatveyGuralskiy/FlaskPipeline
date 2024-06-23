@@ -128,6 +128,7 @@ resource "aws_subnet" "Private_B" {
   }
 }
 
+# Create Private Route Tabless for Availability zones: A, B
 resource "aws_route_table" "Private_Route_Table_A" {
   vpc_id = aws_vpc.VPC_FlaskPipeline.id
   route {

@@ -8,10 +8,10 @@ pipeline {
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('dockerhub')
         GITHUB_CREDENTIALS = credentials('github')
-        AWS_ACCESS_KEY_ID     = credentials('access-key')
-        AWS_SECRET_ACCESS_KEY = credentials('secret-key')
+        AWS_ACCESS_KEY_ID     = credentials('aws-access')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret')
         SONAR_LOGIN_KEY = credentials('sonar-project')
-        DOCKER_VERSION = 'V2.0'
+        DOCKER_VERSION = 'V1.0'
         SECRET_ENV = credentials('secret-env')
     }
      
@@ -166,8 +166,23 @@ pipeline {
                 }
             }
         }
-         // Run Terraform files to create Infrastructure and EKS Cluster
+        // Prompt for deployment confirmation
+        stage('Confirm Deployment') {
+            steps {
+                script {
+                    def userInput = input(id: 'userInput', message: 'Do you want to proceed with the deployment?', parameters: [choice(name: 'Deploy', choices: ['Yes', 'No'], description: 'Choose Yes to deploy, No to skip Terraform Deployment')])
+                    if (userInput == 'No') {
+                        currentBuild.result = 'SUCCESS'
+                        error 'Deployment was skipped by user'
+                    }
+                }
+            }
+        }
+        // Run Terraform files to create Infrastructure and EKS Cluster
         stage('Run Terraform IaaC') {
+            when {
+                expression { return currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+            }
             steps {
                 script {
                     try {
@@ -178,7 +193,6 @@ pipeline {
                             sh 'terraform init'
                             sh 'terraform plan -out=tfplan'
                             sh 'terraform apply -auto-approve tfplan'
-
                         }
                         echo "Terraform apply completed successfully"
                         echo "Finished deployment"

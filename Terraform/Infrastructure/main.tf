@@ -220,6 +220,13 @@ resource "aws_security_group" "Bastion_Host_SG" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -348,14 +355,10 @@ resource "aws_eks_node_group" "Worker_Nodes" {
     max_size     = 12
     min_size     = 8
   }
-  /* Developing Stage
+
   launch_template {
     name    = aws_launch_template.EKS_Node_Template.name
     version = aws_launch_template.EKS_Node_Template.latest_version
-  }
-  */
-  remote_access {
-    ec2_ssh_key = "Virginia"
   }
 
   tags = {
@@ -368,56 +371,13 @@ resource "aws_eks_node_group" "Worker_Nodes" {
     aws_iam_role_policy_attachment.Node_Role-AmazonEC2ContainerRegistryReadOnly,
   ]
 }
-/* Developing Stage
+
 # Launch Template for EKS Nodes
 resource "aws_launch_template" "EKS_Node_Template" {
   name          = "EKS_Node_Template"
   instance_type = "t3.micro"
-  user_data     = "../../Bash/worker_node.sh"
-}
-*/
-
-# Development EKS Cluster
-resource "aws_eks_cluster" "EKS_Dev" {
-  name     = "EKS_FlaskPipeline_Dev"
-  role_arn = aws_iam_role.Main_Role.arn
-
-  vpc_config {
-    subnet_ids = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
-  }
-
-  depends_on = [
-    aws_iam_role_policy_attachment.Main_Role-AmazonEKSClusterPolicy
-  ]
-}
-
-# Create Node Group Dev
-resource "aws_eks_node_group" "Worker_Nodes_Dev" {
-  cluster_name    = aws_eks_cluster.EKS_Dev.name
-  node_group_name = "Node-FlaskPipeline-Dev"
-  node_role_arn   = aws_iam_role.Node_Role.arn
-  subnet_ids      = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
-
-  scaling_config {
-    desired_size = 1
-    max_size     = 2
-    min_size     = 1
-  }
-  instance_types = ["t3.micro"]
-
-  remote_access {
-    ec2_ssh_key = "Virginia"
-  }
-
-  tags = {
-    Environment = "Development"
-  }
-
-  depends_on = [
-    aws_iam_role_policy_attachment.Node_Role-AmazonEKSWorkerNodePolicy,
-    aws_iam_role_policy_attachment.Node_Role-AmazonEKS_CNI_Policy,
-    aws_iam_role_policy_attachment.Node_Role-AmazonEC2ContainerRegistryReadOnly,
-  ]
+  key_name      = "Virginia"
+  user_data     = filebase64("../../Bash/worker_node.sh")
 }
 
 #------------Route53 DNS and ACM-----------------
