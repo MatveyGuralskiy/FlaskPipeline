@@ -10,5 +10,4 @@ hostnames:
 
 filters:
   instance-state-name: running
-  ansible_user: ec2-user
 ---
