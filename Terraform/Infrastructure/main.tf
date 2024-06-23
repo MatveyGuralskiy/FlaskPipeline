@@ -388,6 +388,7 @@ resource "aws_instance" "Master_Ansible" {
   subnet_id         = aws_subnet.Public_B.id
   security_groups   = [aws_security_group.Ansible_SG.id]
   availability_zone = "${var.Region}b"
+  key_name          = var.Key_SSH
   # Bash script to install Ansible
   user_data = file("../../Bash/master_ansible.sh")
   tags = {
@@ -429,22 +430,37 @@ resource "aws_security_group" "Ansible_SG" {
 
 #---------Monitoring (Grafana and Prometheus)-------------
 
-resource "aws_instance" "Monitoring" {
+resource "aws_instance" "Prometheus" {
   ami               = data.aws_ami.Latest_Ubuntu.id
   instance_type     = var.Instance_type
   subnet_id         = aws_subnet.Public_A.id
   security_groups   = [aws_security_group.Monitoring_SG.id]
   availability_zone = "${var.Region}a"
-  # Bash script to install Grafana and Prometheus
-  user_data = file("../../Monitoring/prometheus+grafana.sh")
+  key_name          = var.Key_SSH
+  # Bash script to install Prometheus
+  user_data = file("../../Monitoring/prometheus.sh")
   tags = {
-    Name = "Monitoring"
+    Name = "Monitoring - Prometheus"
+  }
+}
+
+resource "aws_instance" "Grafana" {
+  ami               = data.aws_ami.Latest_Ubuntu.id
+  instance_type     = var.Instance_type
+  subnet_id         = aws_subnet.Public_A.id
+  security_groups   = [aws_security_group.Monitoring_SG.id]
+  availability_zone = "${var.Region}a"
+  key_name          = var.Key_SSH
+  # Bash script to install Grafana
+  user_data = file("../../Monitoring/grafana.sh")
+  tags = {
+    Name = "Monitoring - Grafana"
   }
 }
 
 # Security group for Monitoring
 resource "aws_security_group" "Monitoring_SG" {
-  name        = "Master Ansible Security Group"
+  name        = "Monitoring Security Group"
   description = "Security Group for SSH"
   vpc_id      = aws_vpc.VPC_FlaskPipeline.id
 
@@ -473,7 +489,7 @@ resource "aws_security_group" "Monitoring_SG" {
   }
 
   tags = {
-    Name = "Master Ansible SG"
+    Name = "Monitoring SG"
   }
 }
 
