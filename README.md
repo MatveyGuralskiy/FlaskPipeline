@@ -70,6 +70,8 @@ This setup ensures that the application is rigorously tested, secure, and automa
 
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/FlaskPipeline-Demo.jpeg?raw=true">
 
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/FlaskPipeline-AWS-Demo.jpeg?raw=true">
+
 ### 📱 Application for Docker Image Built With
 
 * Flask
