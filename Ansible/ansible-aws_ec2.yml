@@ -1,7 +1,14 @@
 ---
 plugin: amazon.aws.aws_ec2
 
+regions:
+  - us-east-1
+
 hostnames:
   - ip-address
   - dns-name
-...
+
+filters:
+  instance-state-name: running
+  ansible_user: ec2-user
+---
