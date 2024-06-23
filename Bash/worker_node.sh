@@ -1,16 +1,19 @@
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+
+--==MYBOUNDARY==
+Content-Type: text/x-shellscript; charset="us-ascii"
+
 #!/bin/bash
 #---------------------------
 #FlaskPipeline Project
 #Created by Matvey Guralskiy
 #---------------------------
 
-
-NODE_EXPORTER_VERSION="1.7.0"
-
 cd /tmp
-wget https://github.com/prometheus/node_exporter/releases/download/v$NODE_EXPORTER_VERSION/node_exporter-$NODE_EXPORTER_VERSION.linux-amd64.tar.gz
-tar xvfz node_exporter-$NODE_EXPORTER_VERSION.linux-amd64.tar.gz
-cd node_exporter-$NODE_EXPORTER_VERSION.linux-amd64
+wget https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
+tar xvfz node_exporter-1.7.0.linux-amd64.tar.gz
+cd node_exporter-1.7.0.linux-amd64
 
 mv node_exporter /usr/bin/
 rm -rf /tmp/node_exporter*
@@ -38,3 +41,12 @@ EOF
 systemctl daemon-reload
 systemctl start node_exporter
 systemctl enable node_exporter
+EOF
+
+# SSH Public Key
+mkdir -p /home/ec2-user/.ssh
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC3K5Cr...Q6ec+myemail@example.com" >> /home/ec2-user/.ssh/authorized_keys
+chown -R ec2-user:ec2-user /home/ec2-user/.ssh
+chmod 600 /home/ec2-user/.ssh/authorized_keys
+
+--==MYBOUNDARY==--
