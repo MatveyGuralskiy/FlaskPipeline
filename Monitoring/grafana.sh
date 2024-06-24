@@ -7,7 +7,7 @@
 #-------------Grafana----------------
 
 # Get the IP address of the machine
-PROMETHEUS_IP="PRIVATE_IP_PROMETHEUS"
+PROMETHEUS_IP="10.0.3.100"
 PROMETHEUS_URL="http://${PROMETHEUS_IP}:9090"
 
 apt-get install -y apt-transport-https software-properties-common wget
