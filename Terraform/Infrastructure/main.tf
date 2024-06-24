@@ -430,6 +430,7 @@ resource "aws_security_group" "Ansible_SG" {
 
 #---------Monitoring (Grafana and Prometheus)-------------
 
+# Create Prometheus Instance
 resource "aws_instance" "Prometheus" {
   ami               = data.aws_ami.Latest_Ubuntu.id
   instance_type     = var.Instance_type
@@ -437,6 +438,7 @@ resource "aws_instance" "Prometheus" {
   security_groups   = [aws_security_group.Monitoring_SG.id]
   availability_zone = "${var.Region}a"
   key_name          = var.Key_SSH
+  private_ip        = "10.0.3.100"
   # Bash script to install Prometheus
   user_data = file("../../Monitoring/prometheus.sh")
   tags = {
@@ -444,6 +446,7 @@ resource "aws_instance" "Prometheus" {
   }
 }
 
+# Create Grafana Instance
 resource "aws_instance" "Grafana" {
   ami               = data.aws_ami.Latest_Ubuntu.id
   instance_type     = var.Instance_type
