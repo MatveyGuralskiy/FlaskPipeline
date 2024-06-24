@@ -14,6 +14,7 @@ sudo apt install pip
 sudo apt install python3-boto3
 
 # Clone GitHub Repository
+cd /home/ubuntu/
 git clone https://github.com/MatveyGuralskiy/FlaskPipeline.git
 
 # Install AWS CLI

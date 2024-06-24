@@ -468,7 +468,7 @@ resource "aws_security_group" "Monitoring_SG" {
   vpc_id      = aws_vpc.VPC_FlaskPipeline.id
 
   dynamic "ingress" {
-    for_each = ["3000", "9090", "9100", "22"]
+    for_each = ["3000", "9090", "9100", "22", "587"]
     content {
       from_port   = ingress.value
       to_port     = ingress.value
