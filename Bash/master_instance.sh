@@ -80,25 +80,3 @@ wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-k
 echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
 sudo apt-get update -y
 sudo apt-get install trivy -y
-
-# Install EKS Cluster tools
-# Install AWS CLI
-pip3 install awscli
-# Install eksctl
-mkdir -p /tmp/eksctl
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp/eksctl
-sudo mv /tmp/eksctl/eksctl /usr/local/bin/
-sudo chmod +x /usr/local/bin/eksctl
-
-# Install kubectl
-sudo curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-sudo mv kubectl /usr/local/bin/
-sudo chmod +x /usr/local/bin/kubectl
-
-# Install Ansible
-sudo apt update
-sudo apt install -y ansible
-
-# Install Helm
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
