@@ -11,7 +11,7 @@ pipeline {
         AWS_ACCESS_KEY_ID     = credentials('aws-access')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret')
         SONAR_LOGIN_KEY = credentials('sonar-project')
-        DOCKER_VERSION = 'V6.0'
+        DOCKER_VERSION = 'V4.0'
         SECRET_ENV = credentials('secret-env')
     }
      
@@ -123,6 +123,15 @@ pipeline {
                     } catch (Exception e) {
                         error "Failed to push Docker image to DockerHub: ${e.message}"
                     }
+                }
+            }
+        }
+        // Delete Docker Image from Master Instance
+        stage('Cleanup Docker Images') {
+            steps {
+                script {
+                    sh "docker rmi matveyguralskiy/flask-pipeline:$DOCKER_VERSION"
+                    echo "Removed Docker image matveyguralskiy/flask-pipeline:$DOCKER_VERSION from local repository"
                 }
             }
         }
