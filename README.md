@@ -72,6 +72,14 @@ This setup ensures that the application is rigorously tested, secure, and automa
 
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/FlaskPipeline-AWS-Demo.jpeg?raw=true">
 
+## 👣 Steps of Project and Detail Demonstration
+
+### Continuous Integration
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/FlaskPipeline-CI.jpeg?raw=true">
+
+### Continuos Deployment
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/FlaskPipeline-CD.jpeg?raw=true">
+
 ### 📱 Application for Docker Image Built With
 
 * Flask
