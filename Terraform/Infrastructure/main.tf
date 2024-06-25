@@ -70,7 +70,8 @@ resource "aws_subnet" "Public_A" {
   # Enable Auto-assigned IPv4
   map_public_ip_on_launch = true
   tags = {
-    Name = "Public Subnet A"
+    Name                     = "Public Subnet A"
+    "kubernetes.io/role/elb" = 1
   }
 }
 
@@ -82,7 +83,8 @@ resource "aws_subnet" "Public_B" {
   # Enable Auto-assigned IPv4
   map_public_ip_on_launch = true
   tags = {
-    Name = "Public Subnet B"
+    Name                     = "Public Subnet B"
+    "kubernetes.io/role/elb" = 1
   }
 }
 
@@ -299,7 +301,7 @@ resource "aws_iam_role_policy_attachment" "Main_Role-AmazonEKSClusterPolicy" {
 
 #EKS Cluster
 resource "aws_eks_cluster" "EKS" {
-  name     = "EKS_FlaskPipeline"
+  name     = "EKS-FlaskPipeline"
   role_arn = aws_iam_role.Main_Role.arn
 
   vpc_config {
@@ -351,9 +353,9 @@ resource "aws_eks_node_group" "Worker_Nodes" {
   subnet_ids      = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
 
   scaling_config {
-    desired_size = 1
-    max_size     = 2
-    min_size     = 1
+    desired_size = 6
+    max_size     = 8
+    min_size     = 6
   }
 
   launch_template {
@@ -375,13 +377,14 @@ resource "aws_eks_node_group" "Worker_Nodes" {
 # Launch Template for EKS Nodes
 resource "aws_launch_template" "EKS_Node_Template" {
   name          = "EKS_Node_Template"
-  instance_type = "t3.micro"
+  instance_type = "t3.medium"
   key_name      = "Virginia"
   user_data     = filebase64("../../Bash/worker_node.sh")
 }
 
 #--------------Master Ansible--------------------
 
+# Create Master Ansible
 resource "aws_instance" "Master_Ansible" {
   ami               = data.aws_ami.Latest_Ubuntu.id
   instance_type     = var.Instance_type
