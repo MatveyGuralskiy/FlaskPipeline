@@ -7,7 +7,7 @@ version: '3.8'
 services:
   flaskpipeline:
     build: .
-    image: flask-pipeline:${DOCKER_VERSION}
+    image: flask-pipeline:V5.0
     ports:
       - "80:80"
     env_file:
