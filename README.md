@@ -119,7 +119,6 @@ This setup ensures that the application is rigorously tested, secure, and automa
 </p>
 
 
-
 ## 📚 Acknowledgments
 Documentations for you to make the project
 
