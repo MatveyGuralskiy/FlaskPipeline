@@ -353,9 +353,9 @@ resource "aws_eks_node_group" "Worker_Nodes" {
   subnet_ids      = [aws_subnet.Public_A.id, aws_subnet.Public_B.id]
 
   scaling_config {
-    desired_size = 1
-    max_size     = 2
-    min_size     = 1
+    desired_size = 6
+    max_size     = 8
+    min_size     = 6
   }
 
   launch_template {
