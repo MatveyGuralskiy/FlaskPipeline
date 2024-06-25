@@ -90,7 +90,6 @@ This setup ensures that the application is rigorously tested, secure, and automa
 * SQL injection solve
 * Hashing function + solt
 
-
 <h2>📂 Repository</h2>
 <p>
   |-- /Ansible
