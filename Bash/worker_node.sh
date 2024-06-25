@@ -42,4 +42,6 @@ systemctl daemon-reload
 systemctl start node_exporter
 systemctl enable node_exporter
 
+sudo yum install -y python3-dnf
+
 --==MYBOUNDARY==--
