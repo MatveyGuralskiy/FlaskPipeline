@@ -1,0 +1,45 @@
+#---------------------------
+# FlaskPipeline Project
+# Created by Matvey Guralskiy
+#---------------------------
+replicaCount: 4
+
+container:
+  image: matveyguralskiy/flask-pipeline:V9.0
+
+service:
+  type: LoadBalancer
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: alb
+
+awsLoadBalancerController:
+  image:
+    repository: public.ecr.aws/eks/aws-load-balancer-controller
+    tag: v2.8.1
+    pullPolicy: IfNotPresent
+  clusterName: EKS-FlaskPipeline
+  region: us-east-1
+  vpcId: vpc-0db65685f5943977b
+  serviceAccount:
+    create: true
+    name: aws-load-balancer-controller
+    annotations: {}
+    labels: {}
+  defaultTags:
+    k8s-cluster: eks-cluster
+  service:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "alb"
+    externalTrafficPolicy: Cluster
+  podSecurityPolicy:
+    enabled: false
+
+subnets:
+  - id: subnet-06cca2bfeed8fab94
+    tags:
+      - key: kubernetes.io/role/elb
+        value: 1
+  - id: subnet-0dd64f833920eabb8
+    tags:
+      - key: kubernetes.io/role/elb
+        value: 1
