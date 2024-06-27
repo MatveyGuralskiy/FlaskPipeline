@@ -877,6 +877,8 @@ Go to AWS Console --> Certificate Manager --> Requests --> Copy ARN of SSL Certi
 
 After this you need to check our Public Subnets ID's and VPC id and Enter them to the Kubernetes/values.yaml
 
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-Certificate-SSL-125.png?raw=true">
+
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Helm-1-117.png?raw=true">
 
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Helm-2-118.png?raw=true">
