@@ -72,6 +72,10 @@ This setup ensures that the application is rigorously tested, secure, and automa
 
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Demo/FlaskPipeline-AWS-Demo.jpeg?raw=true">
 
+## 📺 Preview
+
+[![Demonstraion Video](https://img.youtube.com/vi/66-BB7M-uA8/maxresdefault.jpg)](https://www.youtube.com/watch?v=66-BB7M-uA8)
+
 ### Continuous Integration
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Demo/FlaskPipeline-CI.jpeg?raw=true">
 
@@ -946,7 +950,7 @@ After this you need to check our Public Subnets ID's and VPC id and Enter them t
 
 ## 📺 Preview
 
-[![Demonstraion Video](https://img.youtube.com/vi/66-BB7M-uA8/maxresdefault.jpg)](https://www.youtube.com/watch?v=xGXY5STkIak)
+[![Demonstraion Video](https://img.youtube.com/vi/66-BB7M-uA8/maxresdefault.jpg)](https://www.youtube.com/watch?v=66-BB7M-uA8)
 
 ## 📚 Acknowledgments
 Documentations for you to make the project
