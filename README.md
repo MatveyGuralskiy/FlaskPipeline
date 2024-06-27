@@ -118,6 +118,9 @@ This setup ensures that the application is rigorously tested, secure, and automa
 
 </p>
 
+## 📺 Preview
+
+[![Demonstraion Video](https://img.youtube.com/vi/66-BB7M-uA8/maxresdefault.jpg)](https://www.youtube.com/watch?v=xGXY5STkIak)
 
 ## 📚 Acknowledgments
 Documentations for you to make the project
