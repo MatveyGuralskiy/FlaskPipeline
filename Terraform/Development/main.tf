@@ -224,8 +224,6 @@ resource "aws_launch_configuration" "Postgres_Database-LC" {
   image_id      = data.aws_ami.Latest_Ubuntu.id
   instance_type = var.Database_type
 
-  key_name = "Frankfurt"
-
   user_data = file("../../Bash/database.sh")
 
   security_groups = [aws_security_group.Database_SG.id]
@@ -293,7 +291,7 @@ resource "aws_instance" "Master_Instance" {
   subnet_id         = aws_subnet.Public_A.id
   security_groups   = [aws_security_group.SG_Development.id]
   availability_zone = "${var.Region}a"
-  key_name          = "Frankfurt"
+  key_name          = var.Key_Name
   # Bash script to install tools for Master
   user_data = file("../../Bash/master_instance.sh")
   tags = {

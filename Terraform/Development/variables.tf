@@ -32,3 +32,9 @@ variable "CIDR_VPC" {
   description = "My CIDR Block of AWS VPC"
   default     = "192.168.0.0/16"
 }
+
+variable "Key_Name" {
+  type        = string
+  description = "My Key Pair for SSH connection"
+  default     = "Frankfurt"
+}
