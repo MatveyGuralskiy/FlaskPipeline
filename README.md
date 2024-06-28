@@ -4,10 +4,10 @@
   <h1>FlaskPipeline</h1>
   
   <p>
-    Automated Application deployment system using tools such as <strong>Flask, PosgreSQL, Docker, Jenkins, Terraform,<br> ArgoCD, Kubernetes, Grafana, Prometheus, Ansible and more</strong>
+    Automated Application deployment system using tools such as <strong>Flask, PostgreSQL, Docker, Jenkins, Terraform,<br> ArgoCD, Kubernetes, Grafana, Prometheus, Ansible and more</strong>
   </p>
   <p>
-    <img src="https://img.shields.io/badge/Flask-darkseagreen" alt="AWS">&nbsp;
+    <img src="https://img.shields.io/badge/Flask-darkseagreen" alt="Flask">&nbsp;
     <img src="https://img.shields.io/badge/AWS-coral" alt="AWS">&nbsp;
     <img src="https://img.shields.io/badge/Docker-blue" alt="Docker">&nbsp;
     <img src="https://img.shields.io/badge/Jenkins-tomato" alt="Jenkins">&nbsp;
@@ -34,7 +34,7 @@
 
 <h2>🔍 About the Project</h2>
 
-This project establishes a complete CI/CD pipeline for a Flask application using PostgreSQL as the database. It is designed to ensure high-quality code, secure deployments, and efficient monitoring. The pipeline incorporates secure password management through hashing and salting. The application code is hosted on GitHub, with Jenkins orchestrating the CI/CD process. Here’s a breakdown of how it works:
+This project establishes a complete CI/CD pipeline for a Flask application using PostgreSQL as the database. It is designed to ensure high-quality code, secure deployments, and efficient monitoring. The pipeline incorporates secure password management using hashing and salting. The application code is hosted on GitHub, with Jenkins orchestrating the CI/CD process. Here’s a breakdown of how it works:
 
 Source Code Management:
 
@@ -73,7 +73,7 @@ This setup ensures that the application is rigorously tested, secure, and automa
 
 ## 📺 Preview
 
-[![Demonstraion Video](https://img.youtube.com/vi/66-BB7M-uA8/maxresdefault.jpg)](https://www.youtube.com/watch?v=66-BB7M-uA8)
+[![Demonstration Video](https://img.youtube.com/vi/66-BB7M-uA8/maxresdefault.jpg)](https://www.youtube.com/watch?v=66-BB7M-uA8)
 
 
 
