@@ -72,6 +72,10 @@ This setup ensures that the application is rigorously tested, secure, and automa
 
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Demo/FlaskPipeline-AWS-Demo.jpeg?raw=true">
 
+## 📺 Preview
+
+[![Demonstraion Video](https://img.youtube.com/vi/66-BB7M-uA8/maxresdefault.jpg)](https://www.youtube.com/watch?v=66-BB7M-uA8)
+
 ### Continuous Integration
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Demo/FlaskPipeline-CI.jpeg?raw=true">
 
@@ -92,19 +96,11 @@ This setup ensures that the application is rigorously tested, secure, and automa
 - [ ] Modified Jenkins System setting
 - [ ] Create Jenkins Pipeline with Git
 - [ ] Add Webhook to GitHub
-- [ ] Make changes in GitHub Repository to run Jenkins
 - [ ] Choose Input for Deployment in Jenkins
-- [ ] Connect to Ansible Master
-- [ ] Attach your AWS Credentials
-- [ ] Move Private Key to Ansible Master
+- [ ] Configure Ansible Master
 - [ ] Open Port 22 and 9100 to Security group of EKS Nodes
-- [ ] Modified Crontab for Ansible
-- [ ] Connect with SSH to Prometheus Instance
-- [ ] Edit Prometheus Configuration file
-- [ ] Restart Prometheus
-- [ ] Connect with SSH to Grafana Instance
-- [ ] Edit Grafana Configuration file
-- [ ] Restart Grafana
+- [ ] Prometheus Confirgurations
+- [ ] Grafana Configurations inside Instance
 - [ ] Import Dashboard for Grafana
 - [ ] Edit Query of Grafana Metric
 - [ ] Create Alert Rule
@@ -112,6 +108,7 @@ This setup ensures that the application is rigorously tested, secure, and automa
 - [ ] Connect to the Cluster and Create Policy with IAM role
 - [ ] Create AWS Load Balancer Controller
 - [ ] Create ArgoCD
+- [ ] Create Private Repository for your Project
 - [ ] Configure ArgoCD with your GitHub Private Repository
 - [ ] Modified Values and Ingress files: VPC, Subnets, SSL Certificate
 - [ ] Run GitHub Actions with Version 1.0
@@ -450,12 +447,465 @@ And in Script path enter: Jenkins/Jenkinsfile.groovy
 #### Add Webhook to GitHub
 - [x] Add Webhook to GitHub
 
+Go to your GitHub Repository --> Settings --> Webhooks
+
+In Payload URL enter: http:PUBLIC_IP_JENKINS:8080/github-webhook/
+
+Contact type: application/json
+
+Just the push event and Active it
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Webhook-1-57.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Webhook-2-58.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Webhook-3-59.png?raw=true">
+
+After that change something in Repository and make push of commit to check if Jenkins Webhook works
 
 
 
+#### Choose Input for Deployment in Jenkins
+- [x] Choose Input for Deployment in Jenkins
+
+When you push commit from Git to GitHub, Jenkins will see it and Start a Job
+
+Jenkins Input will ask you if you want to make Deployment choose Yes and in the second Input we will ask you again if you're sure about it, so choose also 'Yes'
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-25-60.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-26-61.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-27-62.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-28-63.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-29-64.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-30-65.png?raw=true">
+
+Now you got all Infrastructure with Terraform in Virginia
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-EC2-2-69.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-EKS-1-68.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-VPC-2-66.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-VPC-Peering-1-67.png?raw=true">
+<br>
+
+
+#### Configure Ansible Master
+- [x] Configure Ansible Master
+
+Now use SSH connection with MobaXterm to Ansible Master, copy Public IP of Ansible master or use Bastion Host Instance (Upload to Bastion Host Secret Key)
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Ansible-1-70.png?raw=true">
+
+Attach your AWS Credentials with command 
+```
+aws configure
+
+ACCESS KEY
+SECRET KEY
+REGION: us-east-1
+FORMAT: json
+```
+Create Crontab task now every 3 days on 2AM
+```
+crontab -e
+# Choose number 1
+#Enter this command:
+0 2 */3 * * ansible-playbook -i /home/ubuntu/FlaskPipeline/Ansible/ansible-aws_ec2.yml /home/ubuntu/FlaskPipeline/Ansible/Playbook.yaml >> /path/to/ansible_cron.log 2>&1
+```
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Ansible-2-71.png?raw=true">
+
+Move Private Key to Ansible Master and Change his Permissions
+
+```
+cd .ssh/
+Upload it with MobaXterm buttom at the left of Console
+chmod 600 YOUR_KEY.pem
+```
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Ansible-3-72.png?raw=true">
+<br>
+
+#### Open Port 22 and 9100 to Security group of EKS Nodes
+- [x] Open Port 22 and 9100 to Security group of EKS Nodes
+
+Go to EC2 Console in Virginia
+
+Choose every EKS Node (Without Name tag)
+
+Click on Security --> Security Group
+
+Now in Security group add Inbound Ports 22 and 9100 to 0.0.0.0/0 (to everyone)
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-Node-SG-1-73.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-Node-SG-2-74.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-Node-SG-3-75.png?raw=true">
+<br>
+
+#### Prometheus Confirgurations
+- [x] Prometheus Confirgurations
+
+Copy Public IP of Prometheus Instance and connect to him with MobaXterm
+
+Now we need to change Prometheus Configuration file to attach our Nodes IP's
+
+```
+sudo su
+nano /etc/prometheus/prometheus.yaml
+# Go to EC2 Console and Copy every Private IP of Nodes
+# Your Prometheus file should looks like that:
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "nodes"
+    static_configs:
+      - targets:
+          - 10.0.4.224:9100 #Change here to Nodes Private IP's
+          - 10.0.4.116:9100
+          - 10.0.4.128:9100
+          - 10.0.3.18:9100
+          - 10.0.3.168:9100
+          - 10.0.3.42:9100
+
+# Save everything and Restart Prometheus
+systemctl restart prometheus
+```
+
+Now go to Prometheus Server to check if Targets of Instances are Okay use Public IP of Prometheus Instance and Port 9090
+
+Prometheus_IP:9090
+
+Go to targets and check Instances
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Prometheus-1-76.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Prometheus-2-77.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Prometheus-3-78.png?raw=true">
+<br>
+
+#### Grafana Configurations inside Instance
+- [x] Grafana Configurations inside Instance
+
+Now connect also with SSH to Grafana Instance
+
+We need to edit our Grafana configuration file first of all to add SMTP
+
+```
+sudo su
+nano /etc/grafana/grafana.ini
+# Ctrl + /
+# Enter line: 900
+# Edit lines:
+enabled = true
+user = "YOUR EMAIL"
+password = "YOUR APP PASSWORD ONLY"
+# Delete ";" from this lines and from lines:
+from_address
+from_name
+# After That restart the Grafana server
+systemctl restart grafana-server
+```
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-1-79.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-2-80.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-3-81.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-4-82.png?raw=true">
+
+Our Grafana Server is ready for usage
 
 
 
+#### Import Dashboard for Grafana
+- [x] Import Dashboard for Grafana
+
+Go to Public IP of Grafana Instance and Port 3000 
+
+Public_IP:3000
+
+```
+Login: admin
+Password: admin
+```
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-5-83.png?raw=true">
+
+Now go to Dashboard --> New --> Import
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-6-84.png?raw=true">
+
+Enter this code and Click Load
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-7-85.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-8-86.png?raw=true">
+<br>
+
+#### Edit Query of Grafana Metric
+- [x] Edit Query of Grafana Metric
+
+Go to your new Dashboard and find CPU Basic and click to Options --> Modified
+
+Change Metrics and leave only one metric and click Save and Apply
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-9-87.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-10-88.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-11-89.png?raw=true">
+<br>
+
+#### Create Alert Rule
+- [x] Create Alert Rule 
+
+Now we need to create Alert Rule for our Grafana
+
+Click on Dashboard Metric we edited before --> More --> New alert rule
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-12-90.png?raw=true">
+
+Now edit all Metrics like here, if CPU highly than 80% we will get email notification
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-13-91.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-15-93.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-16-94.png?raw=true">
+
+#### Attach email, Notification policy
+- [x] Attach email, Notification policy
+
+Go to Alerting --> Contact points --> Edit default email
+
+You can also test it 
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-17-95.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-18-96.png?raw=true">
+
+Create Notification Policy 
+
+with CPU equal 80
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-19-97.png?raw=true">
+<br>
+
+#### Connect to the Cluster and Create Policy with IAM role
+- [x] Connect to the Cluster and Create Policy with IAM role
+
+You can connect to your Cluster from every Linux OS, for example I run it on my VM
+
+Before you start you need to enter your AWS Credentials to VM
+
+Install kubectl, argocd, helm and eksctl on your VM
+
+```
+# Install kubectl
+curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+kubectl version --client
+
+# Install ArgoCD
+curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+chmod +x ./argocd
+sudo mv ./argocd /usr/local/bin/argocd
+argocd version
+
+#Install Helm
+curl -LO https://get.helm.sh/helm-v3.12.0-linux-amd64.tar.gz
+tar -zxvf helm-v3.12.0-linux-amd64.tar.gz
+sudo mv linux-amd64/helm /usr/local/bin/helm
+helm version
+
+# Install EKSctl
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+eksctl version
+```
+
+Now to connect to your Cluster and create Policies use this commands:
+
+```
+# Connect to Cluster
+aws eks update-kubeconfig --name EKS-FlaskPipeline --region us-east-1
+# Create Policy
+eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=EKS-FlaskPipeline --approve
+# Install My IAM JSON Policy from directory Policy
+aws iam create-policy \
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document file://alb_controller_iam_policy.json
+# Install IAM Service Account Policy, Change to Your Account ID
+eksctl create iamserviceaccount \
+    --cluster=EKS-FlaskPipeline \
+    --namespace=kube-system \
+    --name=aws-load-balancer-controller \
+    --attach-policy-arn=arn:aws:iam::YOUR_ACCOUNT_ID:policy/AWSLoadBalancerControllerIAMPolicy \
+    --approve
+# If he already exist attach to the command: --override-existing-serviceaccounts
+```
+
+#### Create AWS Load Balancer Controller
+- [x] Create AWS Load Balancer Controller
+
+Let's create AWS Load Balancer Controller on our EKS Cluster
+
+```
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update
+# Copy your VPC ID
+aws eks describe-cluster --name EKS-FlaskPipeline --query "cluster.resourcesVpcConfig.vpcId" --output text
+
+# Insert VPC to your command
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system   \
+  --set clusterName=EKS-FlaskPipeline \
+  --set serviceAccount.create=false \
+  --set region=us-east-1 \
+  --set vpcId=YOUR_VPC_ID \
+  --set serviceAccount.name=aws-load-balancer-controller
+```
+
+Check if you have AWS Load Balancer Controller
+```
+# To see Deployment
+kubectl get deployment aws-load-balancer-controller -n kube-system
+# to see Pods
+kubectl get pods -n kube-system
+```
+
+
+
+#### Create ArgoCD
+- [x] Create ArgoCD
+
+We finally at the stage to create ArgoCD in our Cluster
+
+```
+# To install ArgoCD to the Cluster
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl get all -n argocd
+# It's List of Secrets
+kubectl get secret -n argocd
+# Save your Secret, it's gonna be your Password for Connection to ArgoCD
+kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+# Change ArgoCD to LoadBalancer to get Domain
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+kubectl get svc -n argocd
+# For the project resources
+kubectl create namespace flaskpipeline-project
+```
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Argo-Intall-1-103.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Argo-Intall-2-104.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Argo-Intall-3-105.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Argo-Intall-4-106.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Argo-Intall-5-107.png?raw=true">
+<br>
+
+#### Create Private Repository for your Project
+- [x] Create Private Repository for your Project
+
+Install all files from Directory ArgoCD_Repository to your Private Repository
+
+After that we need to create Secret for GitHub Actions
+
+Go to GitHub Main Settings --> Your Profile --> Developer Settings --> Personal Access Tokens --> Token Classic --> Generate
+
+Now Copy the Secret and Create Secret inside ArgoCD_Repository Secret with name GITHUBACTIONS
+
+
+
+#### Configure ArgoCD with your GitHub Private Repository
+- [x] Configure ArgoCD with your GitHub Private Repository
+
+Follow the Domain of Load Balancer for ArgoCD
+
+Now connect to ArgoCD
+
+```
+Login: admin
+Password: SECRET_YOU_GET_BY_COMMAND
+```
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-ArgoCD-1-108.png?raw=true">
+
+Go to User Info and Change Password that you want, Refresh ArgoCD
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-ArgoCD-2-109.png?raw=true">
+
+Now we need to connect our Private Repository with SSH
+
+Create SSH key and Public Key connect to your Private Repository
+
+Go to Deploy Keys And attach Public Key here
+
+In ArgoCD insert Private Key SSH
+
+Use SSH Link of Repository for ArgoCD
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-ArgoCD-4-111.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-ArgoCD-SSH-1-112.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-ArgoCD-5-113.png?raw=true">
+<br>
+
+#### Modified Values and Ingress files: VPC, Subnets, SSL Certificate
+- [x] Modified Values and Ingress files: VPC, Subnets, SSL Certificate
+
+Go to ArgoCD Private Repository you create and change in Kubernetes/Ingress.yaml Certificate ARN
+
+Go to AWS Console --> Certificate Manager --> Requests --> Copy ARN of SSL Certificate
+
+After this you need to check our Public Subnets ID's and VPC id and Enter them to the Kubernetes/values.yaml
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-Certificate-SSL-125.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Helm-1-117.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Helm-2-118.png?raw=true">
+<br>
+
+#### Run GitHub Actions with Version 1.0
+- [x] Run GitHub Actions with Version 1.0
+
+
+#### Create Project in ArgoCD
+- [x] Create Project in ArgoCD
+
+
+#### Update Version in GitHub Repository
+- [x] Update Version in GitHub Repository
+
+
+#### Run GitHub Actions with new Version
+- [x] Run GitHub Actions with new Version
+
+
+#### Check if ArgoCD makes Deployment correctly
+- [x] Check if ArgoCD makes Deployment correctly
 
 
 ### 📱 Application for Docker Image Built With
@@ -484,6 +934,8 @@ And in Script path enter: Jenkins/Jenkinsfile.groovy
 
   |-- /Monitoring
 
+  |-- /Policy
+
   |-- /Screens
 
   |-- /Terraform
@@ -498,7 +950,7 @@ And in Script path enter: Jenkins/Jenkinsfile.groovy
 
 ## 📺 Preview
 
-[![Demonstraion Video](https://img.youtube.com/vi/66-BB7M-uA8/maxresdefault.jpg)](https://www.youtube.com/watch?v=xGXY5STkIak)
+[![Demonstraion Video](https://img.youtube.com/vi/66-BB7M-uA8/maxresdefault.jpg)](https://www.youtube.com/watch?v=66-BB7M-uA8)
 
 ## 📚 Acknowledgments
 Documentations for you to make the project
