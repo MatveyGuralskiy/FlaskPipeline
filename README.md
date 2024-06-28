@@ -1017,9 +1017,9 @@ Create Record
 
 For example I created Domain name for my Application: **web.matveyguralskiy.com**
 
-<img src="">
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-Route53-1-151.png?raw=true">
 
-<img src="">
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-Route53-1-124.png?raw=true">
 
 ### Update Version in GitHub Repository
 - [x] Update Version in GitHub Repository
