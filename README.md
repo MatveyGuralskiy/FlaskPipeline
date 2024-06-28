@@ -1,4 +1,3 @@
-
 <div align="center">
 
   <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Application/static/images/Logo.png?raw=true" alt="logo" width="400" height="auto" />
@@ -35,7 +34,7 @@
 
 <h2>🔍 About the Project</h2>
 
-This project establishes a full CI/CD pipeline for a Flask application using PostgreSQL as the database. The pipeline ensures secure password management through hashing and salting. The application code is hosted on GitHub, with Jenkins orchestrating the CI/CD process. Here’s a breakdown of how it works:
+This project establishes a complete CI/CD pipeline for a Flask application using PostgreSQL as the database. It is designed to ensure high-quality code, secure deployments, and efficient monitoring. The pipeline incorporates secure password management through hashing and salting. The application code is hosted on GitHub, with Jenkins orchestrating the CI/CD process. Here’s a breakdown of how it works:
 
 Source Code Management:
 
@@ -76,14 +75,52 @@ This setup ensures that the application is rigorously tested, secure, and automa
 
 [![Demonstraion Video](https://img.youtube.com/vi/66-BB7M-uA8/maxresdefault.jpg)](https://www.youtube.com/watch?v=66-BB7M-uA8)
 
+
+
 ### Continuous Integration
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Demo/FlaskPipeline-CI.jpeg?raw=true">
+
+The Continuous Integration pipeline begins with the developer's contribution. Developers write and commit code for a Flask application to a GitHub repository, which includes security measures such as SQL injection protection and hashing functions.
+
+GitHub and Jenkins
+
+Upon committing the code, a GitHub webhook triggers the Jenkins pipeline. Jenkins is the cornerstone of our CI process, orchestrating several crucial steps to ensure code quality and security:
+
+1. Unit Testing: The pipeline kicks off with unit tests to verify the functionality of the code.
+
+2. Security Analysis: Bandit, a tool for security code analysis, scans the code for vulnerabilities.
+
+3. Code Quality Analysis: SonarQube assesses the code against coding standards and metrics, providing a comprehensive analysis report.
+
+4. Docker Image Build: The application is containerized using Docker, creating a Docker image.
+
+5. Vulnerability Scanning: The Docker image is scanned using Trivy to identify potential security vulnerabilities.
+
+6. Docker Compose Testing: The image undergoes further testing using Docker Compose.
+
+7. Infrastructure as Code (IaC): Terraform scripts are used to provision the necessary infrastructure on Amazon AWS: VPC, VPC Peering, Instances, EKS Cluste, Nodes, Policies, Security groups, Auto-Scaling Groups 
+
+8. Ansible is responsible for updating Worker Nodes once every 3 days, which it performs late at night, he does this using a crontab
 
 ### Continuos Deployment
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Demo/FlaskPipeline-CD.jpeg?raw=true">
 
+The Continuous Deployment process is initiated by the DevOps engineer, who oversees GitHub Actions workflows. These workflows automate the deployment process. The DevOps engineer can always choose which version of the application to deploy.
+
+GitHub Actions and Argo
+GitHub Actions interacts with the ArgoCD-FlaskPipeline repository. Any change in the Helm chart version triggers the deployment pipeline, managed by Argo. The deployment process includes several critical components:
+
+1. Service Management: Kubernetes services manage traffic routing to the appropriate pods.
+2. Deployment Management: Kubernetes deployments manage the lifecycle of pods, ensuring the correct number of replicas are running.
+3. Auto-Scaling: The system automatically scales pods based on demand, ensuring high availability and performance.
+4. AWS Load Balancer Controller: Manages incoming requests, directing them to the appropriate services.
+5. Application Load Balancer: Ensures secure communication by redirecting HTTP traffic to HTTPS.
+
+All deployments ensure zero downtime for our application. ArgoCD manages Helm Chart resources, allowing for their recreation or reconfiguration as needed
+
 ## 👣 Steps of Project and Detail Demonstration
 - [ ] Clone Repository
+- [ ] Change Terraform files
 - [ ] Create S3 Buckets for Terraform Remote State
 - [ ] Create Resources with Terraform in Frankfurt
 - [ ] Connect to Master Instance with SSH
@@ -115,15 +152,55 @@ This setup ensures that the application is rigorously tested, secure, and automa
 - [ ] Create Project in ArgoCD
 - [ ] Update Version in GitHub Repository
 - [ ] Run GitHub Actions with new Version
-- [ ] Check if ArgoCD makes Deployment correctly
 
-#### Clone Repository
+### Clone Repository
+- [x] Clone Repository
 Install Git to your PC [Git](https://git-scm.com/downloads)
 ```
 git clone https://github.com/MatveyGuralskiy/FlaskPipeline.git
 ```
 
-#### Create S3 Buckets for Terraform Remote State
+### Change Terraform files
+- [x] Change Terraform files
+Go to Repository you're copy, Terraform --> Build
+
+Change file variable.tf:
+
+Edit *default* to your values
+
+- variable "Remote_State_S3_Dev" - Enter your Unique S3 Bucket to Save Terraform Remote State Files
+
+- variable "Remote_State_S3_Prod" - Enter another  Unique S3 Bucket to Save Terraform Remote State Files
+
+Now go to Development Directory
+
+Change file main.tf:
+
+- line 19: Your S3 Bucket name of Dev
+
+Change file variable.tf:
+
+- variable "Key_Name" - Enter your Key Pair Name you're Created in Frankfurt Region in AWS
+
+The last step, go to Infrastructure directory
+
+Change file variable.tf:
+
+- variable "Key_SSH" - Enter your Key Pair Name you're Created in Virginia Region in AWS
+
+Change file main.tf:
+
+- line 32: Your S3 Bucket name for Production
+
+- line 132: Your S3 Bucket name of Dev
+
+- line 381: Change Your Key Pair name in Virginia
+
+- lines 502-539: Change all Route53 data
+
+
+
+### Create S3 Buckets for Terraform Remote State
 - [x] Create S3 Buckets for Terraform Remote State
 
 Install Terraform to your PC [Terraform](https://developer.hashicorp.com/terraform/install?product_intent=terraform)
@@ -160,7 +237,7 @@ terraform apply -auto-approve
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-S3-2-13.png?raw=true">
 <br>
 
-#### Create Resources with Terraform in Frankfurt
+### Create Resources with Terraform in Frankfurt
 - [x] Create Resources with Terraform in Frankfurt
 
 Go to Directory Terraform --> Development
@@ -204,7 +281,7 @@ Create Session and take Public IP of Master Instance, Username will be *ubuntu* 
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-SSH-Master-2-18.png?raw=true">
 <br>
 
-#### Sign Up to Jenkins
+### Sign Up to Jenkins
 - [x] Sign Up to Jenkins
 
 Use Public IP of Master Instance and Insert him to your Browser and attach to Public IP port 8080 *Public IP:8080*
@@ -227,7 +304,7 @@ Install Plugins and Register
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-4-22.png?raw=true">
 <br>
 
-#### Install Plugins for Jenkins Pipeline
+### Install Plugins for Jenkins Pipeline
 - [x] Install Plugins for Jenkins Pipeline
 
 Go to Manage Jenkins --> Plugins --> Available Plugins
@@ -253,7 +330,7 @@ After Installation Restart Jenkins Server
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-8-28.png?raw=true">
 <br>
 
-#### Create Credentials for Jenkins Pipeline
+### Create Credentials for Jenkins Pipeline
 - [x] Create Credentials for Jenkins Pipeline
 
 Go to Manage Jenkins --> Credentials --> Add Credentials
@@ -276,7 +353,7 @@ You need to create Credentials:
 
 
 
-#### Create env file
+### Create env file
 - [x] Create env file
 
 Create env file in your PC, inside the file enter:
@@ -299,7 +376,7 @@ Now create Credential:
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-12-44.png?raw=true">
 <br>
 
-#### Create Credentials for Jenkins in SonarQube
+### Create Credentials for Jenkins in SonarQube
 - [x] Create Credentials for Jenkins in SonarQube
 
 Go to SonarQube Server on Port 9000 --> Public_IP:9000
@@ -327,7 +404,7 @@ Copy them and create in Jenkins Credential of it
 
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-SonarQube-4-33.png?raw=true">
 
-#### Create SonarQube Local Repository with Token
+### Create SonarQube Local Repository with Token
 - [x] Create SonarQube Local Repository with Token
 
 Now we need to create Local Repository for SonarQube Testing
@@ -350,7 +427,7 @@ Copy Token you got and attach it in Jenkins Credentials
 
 
 
-#### Modified Jenkins System setting
+### Modified Jenkins System setting
 - [x] Modified Jenkins System setting
 
 Now we need to attach our email for Notifications from Jenkins and add SonarQube Server to Jenkins
@@ -410,7 +487,7 @@ After everything click to Save and Apply
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-19-51.png?raw=true">
 <br>
 
-#### Create Jenkins Pipeline with Git
+### Create Jenkins Pipeline with Git
 - [x] Create Jenkins Pipeline with Git
 
 Go to Main Dashboard --> New Item --> Pipeline
@@ -444,7 +521,7 @@ And in Script path enter: Jenkins/Jenkinsfile.groovy
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-24-56.png?raw=true">
 <br>
 
-#### Add Webhook to GitHub
+### Add Webhook to GitHub
 - [x] Add Webhook to GitHub
 
 Go to your GitHub Repository --> Settings --> Webhooks
@@ -465,7 +542,7 @@ After that change something in Repository and make push of commit to check if Je
 
 
 
-#### Choose Input for Deployment in Jenkins
+### Choose Input for Deployment in Jenkins
 - [x] Choose Input for Deployment in Jenkins
 
 When you push commit from Git to GitHub, Jenkins will see it and Start a Job
@@ -496,7 +573,7 @@ Now you got all Infrastructure with Terraform in Virginia
 <br>
 
 
-#### Configure Ansible Master
+### Configure Ansible Master
 - [x] Configure Ansible Master
 
 Now use SSH connection with MobaXterm to Ansible Master, copy Public IP of Ansible master or use Bastion Host Instance (Upload to Bastion Host Secret Key)
@@ -533,7 +610,7 @@ chmod 600 YOUR_KEY.pem
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Ansible-3-72.png?raw=true">
 <br>
 
-#### Open Port 22 and 9100 to Security group of EKS Nodes
+### Open Port 22 and 9100 to Security group of EKS Nodes
 - [x] Open Port 22 and 9100 to Security group of EKS Nodes
 
 Go to EC2 Console in Virginia
@@ -551,7 +628,7 @@ Now in Security group add Inbound Ports 22 and 9100 to 0.0.0.0/0 (to everyone)
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-AWS-Node-SG-3-75.png?raw=true">
 <br>
 
-#### Prometheus Confirgurations
+### Prometheus Confirgurations
 - [x] Prometheus Confirgurations
 
 Copy Public IP of Prometheus Instance and connect to him with MobaXterm
@@ -598,7 +675,7 @@ Go to targets and check Instances
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Prometheus-3-78.png?raw=true">
 <br>
 
-#### Grafana Configurations inside Instance
+### Grafana Configurations inside Instance
 - [x] Grafana Configurations inside Instance
 
 Now connect also with SSH to Grafana Instance
@@ -633,7 +710,7 @@ Our Grafana Server is ready for usage
 
 
 
-#### Import Dashboard for Grafana
+### Import Dashboard for Grafana
 - [x] Import Dashboard for Grafana
 
 Go to Public IP of Grafana Instance and Port 3000 
@@ -657,7 +734,7 @@ Enter this code and Click Load
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-8-86.png?raw=true">
 <br>
 
-#### Edit Query of Grafana Metric
+### Edit Query of Grafana Metric
 - [x] Edit Query of Grafana Metric
 
 Go to your new Dashboard and find CPU Basic and click to Options --> Modified
@@ -671,7 +748,7 @@ Change Metrics and leave only one metric and click Save and Apply
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-11-89.png?raw=true">
 <br>
 
-#### Create Alert Rule
+### Create Alert Rule
 - [x] Create Alert Rule 
 
 Now we need to create Alert Rule for our Grafana
@@ -688,7 +765,7 @@ Now edit all Metrics like here, if CPU highly than 80% we will get email notific
 
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-16-94.png?raw=true">
 
-#### Attach email, Notification policy
+### Attach email, Notification policy
 - [x] Attach email, Notification policy
 
 Go to Alerting --> Contact points --> Edit default email
@@ -706,7 +783,7 @@ with CPU equal 80
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-19-97.png?raw=true">
 <br>
 
-#### Connect to the Cluster and Create Policy with IAM role
+### Connect to the Cluster and Create Policy with IAM role
 - [x] Connect to the Cluster and Create Policy with IAM role
 
 You can connect to your Cluster from every Linux OS, for example I run it on my VM
@@ -761,7 +838,7 @@ eksctl create iamserviceaccount \
 # If he already exist attach to the command: --override-existing-serviceaccounts
 ```
 
-#### Create AWS Load Balancer Controller
+### Create AWS Load Balancer Controller
 - [x] Create AWS Load Balancer Controller
 
 Let's create AWS Load Balancer Controller on our EKS Cluster
@@ -792,7 +869,7 @@ kubectl get pods -n kube-system
 
 
 
-#### Create ArgoCD
+### Create ArgoCD
 - [x] Create ArgoCD
 
 We finally at the stage to create ArgoCD in our Cluster
@@ -824,7 +901,7 @@ kubectl create namespace flaskpipeline-project
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Argo-Intall-5-107.png?raw=true">
 <br>
 
-#### Create Private Repository for your Project
+### Create Private Repository for your Project
 - [x] Create Private Repository for your Project
 
 Install all files from Directory ArgoCD_Repository to your Private Repository
@@ -837,7 +914,7 @@ Now Copy the Secret and Create Secret inside ArgoCD_Repository Secret with name 
 
 
 
-#### Configure ArgoCD with your GitHub Private Repository
+### Configure ArgoCD with your GitHub Private Repository
 - [x] Configure ArgoCD with your GitHub Private Repository
 
 Follow the Domain of Load Balancer for ArgoCD
@@ -872,7 +949,7 @@ Use SSH Link of Repository for ArgoCD
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-ArgoCD-5-113.png?raw=true">
 <br>
 
-#### Modified Values and Ingress files: VPC, Subnets, SSL Certificate
+### Modified Values and Ingress files: VPC, Subnets, SSL Certificate
 - [x] Modified Values and Ingress files: VPC, Subnets, SSL Certificate
 
 Go to ArgoCD Private Repository you create and change in Kubernetes/Ingress.yaml Certificate ARN
@@ -888,25 +965,126 @@ After this you need to check our Public Subnets ID's and VPC id and Enter them t
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Helm-2-118.png?raw=true">
 <br>
 
-#### Run GitHub Actions with Version 1.0
+### Run GitHub Actions with Version 1.0
 - [x] Run GitHub Actions with Version 1.0
 
+After everything go to ArgoCD Private Repository --> Actions --> Update Version for Helm Chart --> Run Workflow --> Choose your Version of Application to Deploy
 
-#### Create Project in ArgoCD
+Now files *values.yaml, Chart.yaml* in Kubernetes directory were changed to the new version
+
+### Create Project in ArgoCD
 - [x] Create Project in ArgoCD
 
+To make deployment of Application we're going to use ArgoCD
 
-#### Update Version in GitHub Repository
+Run ArgoCD in your Browser --> Applications --> New App
+
+```
+Application Name: flask-pipeline (with lowercase letters)
+Project Name: default
+Sync Policy:
+- Prune Resources
+- Self Heal
+
+Source:
+Repository Url: (Private Repository with SSH)
+Revision: HEAD
+Path: Kubernetes
+
+Destination:
+Cluster Url: https://kubernetes.default.svc
+
+Helm:
+Values file: values.yaml
+```
+And Click to Create App
+
+After Deployment you can check Load Balancers in Virginia in your AWS Console
+
+### Create Route53 Record
+- [x] Go to Route53 --> Hosted Zone --> Your Hosted Zone --> Create Record
+
+Choose some subdomain for your Application our use www
+
+Record Type: A
+
+Alias: Yes
+Endpoint: Alias to Application Load Balancer and Classic Load Balancer
+Region: Virginia
+Choose Application Load Balancer of Application
+
+Create Record
+
+For example I created Domain name for my Application: **web.matveyguralskiy.com**
+
+<img src="">
+
+<img src="">
+
+### Update Version in GitHub Repository
 - [x] Update Version in GitHub Repository
 
+To update your Application edit in Main Repository *index.html* Version, *dockercompose.yaml* Version, and *Jenkinsfile* Version of Docker Application
 
-#### Run GitHub Actions with new Version
+Push new Update to your GitHub with Git and Merge to the Main Branch
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Update-Version-1-136.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Update-Version-2-137.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Update-Version-3-138.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Update-Version-Git-4-139.png?raw=true">
+
+After that Jenkins will start a new Job Automatically
+
+In Input of Jenkins choose "No" for Terraform to not change anything in Terraform Remote State
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-32-140.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-33-141.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-34-142.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-35-143.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-36-144.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Jenkins-37-145.png?raw=true">
+
+How my DockerHub looks after Deployments
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-DockerHub-1-148.png?raw=true">
+
+It's my Grafana Dashboard
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-21-134.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-22-135.png?raw=true">
+
+### Run GitHub Actions with new Version
 - [x] Run GitHub Actions with new Version
 
+Go to Private Repository and Run GitHub Action and in Runworkflow choose new Deployment Version for example: V2.0
 
-#### Check if ArgoCD makes Deployment correctly
-- [x] Check if ArgoCD makes Deployment correctly
+ArgoCD checks your Repository every 3 minutes, so he will see, that you have a new push and will run ArgoCD
 
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-ArgoCD-11-146.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Flask-9-147.png?raw=true">
+
+It's my Grafana Dashboard of Worker Nodes
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-21-134.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-22-135.png?raw=true">
+
+Redirect from HTTP to HTTPS of Application Website
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Redirect-1-149.png?raw=true">
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Redirect-2-150.png?raw=true">
+<br>
 
 ### 📱 Application for Docker Image Built With
 
@@ -923,6 +1101,8 @@ After this you need to check our Public Subnets ID's and VPC id and Enter them t
   |-- /Ansible
   
   |-- /Application
+
+  |-- /ArgoCD_Repository (Private Repository files)
 
   |-- /Bash
 
@@ -947,10 +1127,6 @@ After this you need to check our Public Subnets ID's and VPC id and Enter them t
   |-- README.md
 
 </p>
-
-## 📺 Preview
-
-[![Demonstraion Video](https://img.youtube.com/vi/66-BB7M-uA8/maxresdefault.jpg)](https://www.youtube.com/watch?v=66-BB7M-uA8)
 
 ## 📚 Acknowledgments
 Documentations for you to make the project
