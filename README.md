@@ -103,7 +103,7 @@ Upon committing the code, a GitHub webhook triggers the Jenkins pipeline. Jenkin
 8. Ansible is responsible for updating Worker Nodes once every 3 days, which it performs late at night, he does this using a crontab
 
 ### Continuos Deployment
-<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Demo/FlaskPipeline-CD.jpeg?raw=true">
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Demo/FlaskPipeline-Part-CD.jpeg?raw=true">
 
 The Continuous Deployment process is initiated by the DevOps engineer, who oversees GitHub Actions workflows. These workflows automate the deployment process. The DevOps engineer can always choose which version of the application to deploy.
 
