@@ -1056,12 +1056,6 @@ How my DockerHub looks after Deployments
 
 <img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-DockerHub-1-148.png?raw=true">
 
-It's my Grafana Dashboard
-
-<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-21-134.png?raw=true">
-
-<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Project/Project-Grafana-22-135.png?raw=true">
-
 ### Run GitHub Actions with new Version
 - [x] Run GitHub Actions with new Version
 
