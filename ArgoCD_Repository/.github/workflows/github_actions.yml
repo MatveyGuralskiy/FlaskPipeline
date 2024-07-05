@@ -5,6 +5,7 @@
 name: Update Version for Helm Chart
 
 on:
+  # Manually trigger workflow with version input
   workflow_dispatch:
     inputs:
       version:
@@ -12,31 +13,38 @@ on:
         required: true
 
 jobs:
+  # Job update Helm Chart version
   update-files:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout repository code
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.GITHUBACTIONS }}
 
+      # Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '20'
-
+      
+      # Set up environment variable for version
       - name: Set up environment variable
         run: echo "VERSION_TO_REPLACE=${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
+       # Update appVersion in Chart.yaml with new version
       - name: Update appVersion in Chart.yaml
         run: |
           sed -i "s/appVersion: \"[^\"]*\"/appVersion: \"$VERSION_TO_REPLACE\"/" Kubernetes/Chart.yaml
 
+      # Update Docker image version in values.yaml
       - name: Update image version in values.yaml
         run: |
           sed -i "s/image: matveyguralskiy\/flask-pipeline:[^ ]*/image: matveyguralskiy\/flask-pipeline:$VERSION_TO_REPLACE/" Kubernetes/values.yaml
 
+      # Commit version updates to repository
       - name: Commit changes
         run: |
           git config --global user.name 'github-actions'
