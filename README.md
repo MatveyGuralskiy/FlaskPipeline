@@ -118,6 +118,15 @@ GitHub Actions interacts with the ArgoCD-FlaskPipeline repository. Any change in
 
 All deployments ensure zero downtime for our application. ArgoCD manages Helm Chart resources, allowing for their recreation or reconfiguration as needed
 
+### GitOps in Project
+GitOps, in simple terms, is a way to manage and automate your infrastructure and application deployments using Git as the single source of truth.
+
+ArgoCD is a GitOps operator that monitors the Git repository for changes.
+
+When changes are detected, ArgoCD ensures that these changes are applied to the Kubernetes cluster, deploying the updated version of the FlaskPipeline application
+
+<img src="https://github.com/MatveyGuralskiy/FlaskPipeline/blob/main/Screens/Demo/FlaskPipeline-GitOps.jpeg?raw=true">
+
 ## 👣 Steps of Project and Detail Demonstration
 - [ ] Clone Repository
 - [ ] Change Terraform files

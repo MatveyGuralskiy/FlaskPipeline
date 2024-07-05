@@ -19,7 +19,7 @@ awsLoadBalancerController:
     pullPolicy: IfNotPresent
   clusterName: EKS-FlaskPipeline
   region: us-east-1
-  vpcId: vpc-0db65685f5943977b
+  vpcId: YOUR_VPC_ID
   serviceAccount:
     create: true
     name: aws-load-balancer-controller
@@ -35,11 +35,11 @@ awsLoadBalancerController:
     enabled: false
 
 subnets:
-  - id: subnet-06cca2bfeed8fab94
+  - id: YOUR_PUBLIC_A_ID
     tags:
       - key: kubernetes.io/role/elb
         value: 1
-  - id: subnet-0dd64f833920eabb8
+  - id: YOUR_PUBLIC_B_ID
     tags:
       - key: kubernetes.io/role/elb
         value: 1
