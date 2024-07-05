@@ -1,3 +1,7 @@
+#---------------------------
+#FlaskPipeline Project
+#Created by Matvey Guralskiy
+#---------------------------
 from flask import Flask, render_template, request, redirect, url_for, flash    # Flask framework
 from models import db, bcrypt, User                                            # Flask-Bcrypt is a Flask extension for working with password hashing
 from flask_sqlalchemy import SQLAlchemy                                        # SQLAlchemy allows to interact with databases
